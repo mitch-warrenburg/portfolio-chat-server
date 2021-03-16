@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
 import { Server } from 'socket.io';
-import StorageService from './store';
 import { SessionSocket } from './types';
+import { StorageService } from './store';
 import { createAdapter } from 'socket.io-redis';
 import { PORT, SOCKET_CONNECTED } from './constants';
 import { createSessionMiddleware } from './middleware';

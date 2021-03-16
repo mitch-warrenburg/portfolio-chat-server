@@ -1,5 +1,5 @@
-import { groupBy } from 'lodash';
 import { Redis } from 'ioredis';
+import { groupBy } from 'lodash';
 import RedisSessionRepository from './session/RedisSessionRepository';
 import RedisMessageRepository from './messaging/RedisMessageRepository';
 import { SessionSocket, Session, Message, SessionWithMessages } from '../types';

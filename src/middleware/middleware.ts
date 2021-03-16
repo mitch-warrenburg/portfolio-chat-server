@@ -1,7 +1,7 @@
+import { v4 as uuid } from 'uuid';
 import { SessionSocket } from '../types';
 import { StorageService } from '../store';
 
-const uuid = require('uuid').v4;
 
 const _syncSessionIfExists = async (
   socket: SessionSocket,

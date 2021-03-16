@@ -5,12 +5,9 @@ export const joinRoom = (socket: SessionSocket) => {
   return socket.join(socket.userID);
 };
 
-export const emitSessionDetails = ({
-  userID,
-  sessionID,
-  emit,
-}: SessionSocket) => {
-  return emit('session', {
+export const emitSessionDetails = (socket: SessionSocket) => {
+  const { userID, sessionID } = socket;
+  return socket.emit('session', {
     userID,
     sessionID,
   });
