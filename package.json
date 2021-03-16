@@ -28,12 +28,14 @@
     "ts-node-dev": "^1.1.6",
     "tslib": "^2.1.0",
     "tsutils": "^3.21.0",
-    "typescript": "^4.2.3"
+    "typescript": "^4.2.3",
+    "yarn-run-all": "^3.1.1"
   },
   "dependencies": {
     "connect-redis": "^5.1.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
+    "ioredis": "^4.24.2",
     "lodash": "^4.17.21",
     "morgan": "^1.10.0",
     "redis": "^3.0.2",
@@ -46,8 +48,11 @@
     "clean": "rimraf coverage build tmp",
     "build": "yarn clean && tsc -p tsconfig.release.json",
     "build:watch": "tsc -w -p tsconfig.release.json",
-    "lint": "eslint . --ext .ts,.tsx",
     "test": "jest --coverage",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "ts": "tsc",
+    "lint": "eslint --fix 'src/**/*.{js,ts,jsx,tsx}'",
+    "format": "prettier --write 'src/**/*.{js,ts,jsx,tsx}'",
+    "tidy": "run-s ts format lint && git add ."
   }
 }

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "es6",
+    "noEmit": true,
     "module": "commonjs",
     "moduleResolution": "node",
     "resolveJsonModule": true,
@@ -9,7 +10,7 @@
     "esModuleInterop": true,
     "importHelpers": true,
     "jsx": "react",
-    "strict": true,
+    "strict": false,
     "sourceMap": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
