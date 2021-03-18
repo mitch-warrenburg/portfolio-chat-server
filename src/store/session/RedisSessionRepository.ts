@@ -5,7 +5,7 @@ import { SESSION_TTL } from '../../constants';
 
 const mapSession = ([userId, username, connected]): Session | undefined => {
   return userId
-    ? { userId: userId, username, connected: connected === 'true' }
+    ? { userId, username, connected: connected === 'true' }
     : undefined;
 };
 

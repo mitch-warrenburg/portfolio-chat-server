@@ -10,7 +10,7 @@ export const handlePrivateMessage = (
     const message: Message = { to, content, from: socket.userId };
 
     socket.in(to).emit(PRIVATE_MESSAGE, message);
-    // socket.to(from).emit(PRIVATE_MESSAGE, message);
+    socket.emit(PRIVATE_MESSAGE, message);
 
     await storageService.saveMessage(message);
   });
