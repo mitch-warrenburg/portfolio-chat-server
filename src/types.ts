@@ -1,8 +1,8 @@
 import { Socket } from 'socket.io';
 
 export interface SessionSocket extends Socket {
-  userID: string;
-  sessionID: string;
+  userId: string;
+  sessionId: string;
   username: string;
 }
 
@@ -13,13 +13,13 @@ export interface Message {
 }
 
 export interface Session {
-  userID: string;
+  userId: string;
   username: string;
   connected: boolean;
 }
 
 export interface SessionWithMessages extends Session {
-  userID: string;
+  userId: string;
   username: string;
   connected: boolean;
   messages: Array<Message>;

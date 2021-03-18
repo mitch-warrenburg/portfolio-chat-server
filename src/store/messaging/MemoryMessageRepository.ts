@@ -12,9 +12,9 @@ export default class MemoryMessageRepository implements MessageRepository {
     this.messages.push(message);
   }
 
-  async findMessagesForUser(userID: string): Promise<Array<Message>> {
+  async findMessagesForUser(userId: string): Promise<Array<Message>> {
     return this.messages.filter(
-      ({ from, to }) => from === userID || to === userID,
+      ({ from, to }) => from === userId || to === userId,
     );
   }
 }

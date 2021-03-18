@@ -8,7 +8,7 @@ import { createSessionMiddleware } from './middleware';
 import { handlePrivateMessage, handleSessionDisconnect } from './handlers';
 import {
   joinRoom,
-  emitSessionDetails,
+  emitNewSessionDetails,
   emitUserSessionsWithMessages,
   broadcastUserSessionConnected,
 } from './util';
@@ -30,7 +30,7 @@ io.use(createSessionMiddleware(storageService));
 const onConnection = async (socket: SessionSocket) => {
   await storageService.saveSession(socket, true);
 
-  emitSessionDetails(socket);
+  emitNewSessionDetails(socket);
   joinRoom(socket);
 
   const sessions = await storageService.getUserSessionsWithMessages(socket);
@@ -42,4 +42,4 @@ const onConnection = async (socket: SessionSocket) => {
   handleSessionDisconnect(io, socket, storageService);
 };
 
-io.on(SOCKET_CONNECTED, onConnection);
+io.on(SOCKET_CONNECTED as 'connection', onConnection);

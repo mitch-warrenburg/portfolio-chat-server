@@ -21,9 +21,9 @@ export default class RedisMessageRepository implements MessageRepository {
       .exec();
   }
 
-  async findMessagesForUser(userID: string): Promise<Array<Message>> {
+  async findMessagesForUser(userId: string): Promise<Array<Message>> {
     return await this.redisClient
-      .lrange(`messages:${userID}`, 0, -1)
+      .lrange(`messages:${userId}`, 0, -1)
       .then((results) => {
         return results.map((result) => JSON.parse(result));
       });

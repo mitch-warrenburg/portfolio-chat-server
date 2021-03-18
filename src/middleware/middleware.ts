@@ -8,12 +8,12 @@ const _syncSessionIfExists = async (
   next: (e?: any) => any,
   storageService: StorageService,
 ) => {
-  const sessionID = socket.handshake.auth.sessionID;
-  if (sessionID) {
-    const session = await storageService.findSession(sessionID);
+  const { sessionId } = socket.handshake.auth;
+  if (sessionId) {
+    const session = await storageService.findSession(sessionId);
     if (session) {
-      socket.sessionID = sessionID;
-      socket.userID = session.userID;
+      socket.sessionId = sessionId;
+      socket.userId = session.userId;
       socket.username = session.username;
       return next();
     }
@@ -24,12 +24,12 @@ const _createSession = async (
   socket: SessionSocket,
   next: (e?: any) => any,
 ) => {
-  const username = socket.handshake.auth.username;
+  const { username } = socket.handshake.auth;
   if (!username) {
     return next(new Error('invalid username'));
   }
-  socket.userID = uuid();
-  socket.sessionID = uuid();
+  socket.userId = uuid();
+  socket.sessionId = uuid();
   socket.username = username;
   next();
 };

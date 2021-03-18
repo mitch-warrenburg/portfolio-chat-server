@@ -3,9 +3,9 @@ import { Session } from '../../types';
 import { SessionRepository } from './types';
 import { SESSION_TTL } from '../../constants';
 
-const mapSession = ([userID, username, connected]): Session | undefined => {
-  return userID
-    ? { userID, username, connected: connected === 'true' }
+const mapSession = ([userId, username, connected]): Session | undefined => {
+  return userId
+    ? { userId: userId, username, connected: connected === 'true' }
     : undefined;
 };
 
@@ -18,17 +18,17 @@ export default class RedisSessionRepository implements SessionRepository {
 
   async findSession(id: string): Promise<Session> {
     return this.redisClient
-      .hmget(`session:${id}`, 'userID', 'username', 'connected')
+      .hmget(`session:${id}`, 'userId', 'username', 'connected')
       .then(mapSession);
   }
 
-  async saveSession(id: string, { userID, username, connected }: Session) {
+  async saveSession(id: string, { userId, username, connected }: Session) {
     await this.redisClient
       .multi()
       .hset(
         `session:${id}`,
-        'userID',
-        userID,
+        'userId',
+        userId,
         'username',
         username,
         'connected',
@@ -57,7 +57,7 @@ export default class RedisSessionRepository implements SessionRepository {
 
     const commands = [];
     keys.forEach((key) => {
-      commands.push(['hmget', key, 'userID', 'username', 'connected']);
+      commands.push(['hmget', key, 'userId', 'username', 'connected']);
     });
 
     return await this.redisClient

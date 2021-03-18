@@ -30,9 +30,9 @@ export default class StorageService {
   }
 
   async saveSession(socket: SessionSocket, connected: boolean) {
-    await this.sessionRepository.saveSession(socket.sessionID, {
+    await this.sessionRepository.saveSession(socket.sessionId, {
       connected,
-      userID: socket.userID,
+      userId: socket.userId,
       username: socket.username,
     });
   }
@@ -41,19 +41,19 @@ export default class StorageService {
     socket: SessionSocket,
   ): Promise<Array<SessionWithMessages>> {
     const [messages, sessions] = await Promise.all([
-      this.findMessagesForUser(socket.userID),
+      this.findMessagesForUser(socket.userId),
       this.sessionRepository.findAllSessions(),
     ]);
 
     const messagesByUserSession = groupBy(messages, ({ from, to }) =>
-      socket.userID === from ? to : from,
+      socket.userId === from ? to : from,
     );
 
     return sessions.map((session: Session) => ({
-      userID: session.userID,
+      userId: session.userId,
       username: session.username,
       connected: session.connected,
-      messages: messagesByUserSession[session.userID] || [],
+      messages: messagesByUserSession[session.userId] || [],
     }));
   }
 }
