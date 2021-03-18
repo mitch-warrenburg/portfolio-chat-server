@@ -32,6 +32,7 @@
     "yarn-run-all": "^3.1.1"
   },
   "dependencies": {
+    "body-parser": "^1.19.0",
     "connect-redis": "^5.1.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
@@ -45,6 +46,7 @@
   },
   "scripts": {
     "start": "tsnd --respawn --deps --cls --exit-child --rs --pretty --log-error src/main.ts",
+    "start:debug": "DEBUG=* yarn start",
     "clean": "rimraf coverage build tmp",
     "build": "yarn clean && tsc -p tsconfig.release.json",
     "build:watch": "tsc -w -p tsconfig.release.json",

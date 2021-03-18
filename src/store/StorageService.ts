@@ -5,32 +5,40 @@ import RedisMessageRepository from './messaging/RedisMessageRepository';
 import { SessionSocket, Session, Message, SessionWithMessages } from '../types';
 
 export default class StorageService {
-  private messageRepository: RedisMessageRepository;
-  private sessionRepository: RedisSessionRepository;
+  private readonly _messageRepository: RedisMessageRepository;
+  private readonly _sessionRepository: RedisSessionRepository;
 
   constructor(redisClient: Redis) {
-    this.messageRepository = new RedisMessageRepository(
+    this._messageRepository = new RedisMessageRepository(
       redisClient.duplicate(),
     );
-    this.sessionRepository = new RedisSessionRepository(
+    this._sessionRepository = new RedisSessionRepository(
       redisClient.duplicate(),
     );
+  }
+
+  get messageRepository(): RedisMessageRepository {
+    return this._messageRepository;
+  }
+
+  get sessionRepository(): RedisSessionRepository {
+    return this._sessionRepository;
   }
 
   async saveMessage(message: Message): Promise<void> {
-    await this.messageRepository.saveMessage(message);
+    await this._messageRepository.saveMessage(message);
   }
 
   async findMessagesForUser(userId: string): Promise<Array<Message>> {
-    return this.messageRepository.findMessagesForUser(userId);
+    return this._messageRepository.findMessagesForUser(userId);
   }
 
   async findSession(id: string): Promise<Session | undefined> {
-    return this.sessionRepository.findSession(id);
+    return this._sessionRepository.findSession(id);
   }
 
   async saveSession(socket: SessionSocket, connected: boolean) {
-    await this.sessionRepository.saveSession(socket.sessionId, {
+    await this._sessionRepository.saveSession(socket.sessionId, {
       connected,
       userId: socket.userId,
       username: socket.username,
@@ -42,7 +50,7 @@ export default class StorageService {
   ): Promise<Array<SessionWithMessages>> {
     const [messages, sessions] = await Promise.all([
       this.findMessagesForUser(socket.userId),
-      this.sessionRepository.findAllSessions(),
+      this._sessionRepository.findAllSessions(),
     ]);
 
     const messagesByUserSession = groupBy(messages, ({ from, to }) =>
