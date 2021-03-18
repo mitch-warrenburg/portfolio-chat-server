@@ -1,10 +1,18 @@
 import { Redis } from 'ioredis';
 import { groupBy } from 'lodash';
-import RedisSessionRepository from './session/RedisSessionRepository';
-import RedisMessageRepository from './messaging/RedisMessageRepository';
-import { SessionSocket, Session, Message, SessionWithMessages } from '../types';
+import { RedisAdminRepository } from '../admin';
+import RedisSessionRepository from '../session/RedisSessionRepository';
+import RedisMessageRepository from '../messaging/RedisMessageRepository';
+import {
+  Session,
+  Message,
+  AdminUser,
+  SessionSocket,
+  SessionWithMessages,
+} from '../../types';
 
 export default class StorageService {
+  private readonly _adminRepository: RedisAdminRepository;
   private readonly _messageRepository: RedisMessageRepository;
   private readonly _sessionRepository: RedisSessionRepository;
 
@@ -15,6 +23,7 @@ export default class StorageService {
     this._sessionRepository = new RedisSessionRepository(
       redisClient.duplicate(),
     );
+    this._adminRepository = new RedisAdminRepository(redisClient.duplicate());
   }
 
   get messageRepository(): RedisMessageRepository {
@@ -23,6 +32,22 @@ export default class StorageService {
 
   get sessionRepository(): RedisSessionRepository {
     return this._sessionRepository;
+  }
+
+  get adminRepository(): RedisAdminRepository {
+    return this._adminRepository;
+  }
+
+  async saveAdminUser(username: string, password: string): Promise<void> {
+    await this._adminRepository.saveUser(username, password);
+  }
+
+  async findAdminUser(username: string): Promise<AdminUser | undefined> {
+    return this._adminRepository.findUser(username);
+  }
+
+  async deleteAllAdminUsers(): Promise<void> {
+    await this._adminRepository.deleteKeysMatching('username:*');
   }
 
   async saveMessage(message: Message): Promise<void> {

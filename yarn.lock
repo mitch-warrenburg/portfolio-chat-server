@@ -690,7 +690,7 @@
   dependencies:
     "@types/node" "*"
 
-"@types/ioredis@*":
+"@types/ioredis@*", "@types/ioredis@^4.22.0":
   version "4.22.0"
   resolved "https://registry.npmjs.org/@types/ioredis/-/ioredis-4.22.0.tgz#b07cc3405d98bae50a642b20790471b4c3c390a9"
   integrity sha512-BhgyAqt+CIFj/ejdYpWSGYUQzoQr7sFOBYLL8yEExa1tSTi2cy2D3a952zF8Tm4Q1cY3srn8xXZfb2riX6hWjw==
