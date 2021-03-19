@@ -7,5 +7,4 @@ const storageService = new StorageService(redisClient);
 
 const io = wsServer(redisClient, storageService);
 
-httpServer(io, storageService)
-  .then(() => console.log('Started http server.'))
+httpServer(io, storageService).then(() => console.log('Started http server.'));

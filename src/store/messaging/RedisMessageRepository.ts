@@ -1,7 +1,7 @@
 import { MessageRepository } from './types';
 import { CONVERSATION_TTL } from '../../constants';
 import { Redis } from 'ioredis';
-import { Message } from '../../types';
+import { ChatMessage } from '../../types';
 
 export default class RedisMessageRepository implements MessageRepository {
   private redisClient: Redis;
@@ -21,7 +21,7 @@ export default class RedisMessageRepository implements MessageRepository {
       .exec();
   }
 
-  async findMessagesForUser(userId: string): Promise<Array<Message>> {
+  async findMessagesForUser(userId: string): Promise<Array<ChatMessage>> {
     return await this.redisClient
       .lrange(`messages:${userId}`, 0, -1)
       .then((results) => {

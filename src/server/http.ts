@@ -1,16 +1,15 @@
 import cors from 'cors';
-import bcrypt from 'bcrypt';
+import env from '../env';
 import express from 'express';
 import passport from 'passport';
 import { Server } from 'socket.io';
 import bodyParser from 'body-parser';
-import { AdminUser } from '../types';
+import { User } from '../types';
 import cookieParser from 'cookie-parser';
 import { StorageService } from '../store';
+import { authenticateAdmin } from '../auth';
 import { BasicStrategy } from 'passport-http';
 import {
-  HTTP_PORT,
-  CORS_CONFIG,
   USER_CONNECTED,
   PRIVATE_MESSAGE,
   USER_DISCONNECTED,
@@ -20,9 +19,9 @@ const app = express();
 
 export default async (io: Server, storageService: StorageService) => {
   await storageService.deleteAllAdminUsers();
-  await storageService.saveAdminUser('mw', 'admin');
+  await storageService.saveAdminUser(env.adminUsername, env.adminPassword);
 
-  passport.serializeUser(async ({ username }: AdminUser, done) => {
+  passport.serializeUser(async ({ username }: User, done) => {
     done(null, username);
   });
 
@@ -31,47 +30,68 @@ export default async (io: Server, storageService: StorageService) => {
     done(null, user);
   });
 
-  app.use(cookieParser());
-  app.use(bodyParser.json(), cors(CORS_CONFIG));
+  app.use(
+    cookieParser(),
+    bodyParser.json(),
+    cors({ origin: env.corsOrigins, methods: env.corsMethods }),
+  );
   app.use(passport.initialize());
 
   passport.use(
     new BasicStrategy(async (username, password, done) => {
-      const user = await storageService.findAdminUser(username);
-
-      if (!user) {
-        return done(null, false);
+      try {
+        const isValid = await authenticateAdmin(
+          storageService,
+          username,
+          password,
+        );
+        done(null, isValid ? { username, password } : false);
+      } catch (e) {
+        done(e);
       }
-
-      await bcrypt.compare(password, user.password, (error, isValid) => {
-        if (error) {
-          return done(error);
-        }
-        if (!isValid) {
-          return done(null, false);
-        }
-        return done(null, user);
-      });
     }),
   );
 
+  /* public routes */
+
+  app.get('/api/v1/chat/defaultSendToUserId', (_, response) => {
+    response.json({ userId: env.adminUserId });
+  });
+
+  /* protected routes */
+
   app.post(
     '/admin/auth',
-    passport.authenticate('basic', { session: false }),
-    (request, response) => response.json(request.user),
+    passport.authenticate('basic', { session: true }),
+    (request, response) => {
+      const { username } = request.user as User;
+      response.json({
+        username,
+        userId: env.adminUserId,
+        sessionId: env.adminSessionId,
+      });
+    },
   );
 
-  app.post('/messages', async ({ body: message }, response) => {
-    io.emit(PRIVATE_MESSAGE, message);
-    await storageService.saveMessage(message);
-    response.send(message);
-  });
+  app.post(
+    '/messages',
+    passport.authenticate('basic', { session: true }),
+    async ({ body: message }, response) => {
+      io.emit(PRIVATE_MESSAGE, message);
+      await storageService.saveMessage(message);
+      response.send(message);
+    },
+  );
 
-  app.post('/users', async ({ body: user }, response) => {
-    await storageService.sessionRepository.saveSession(user.sessionId, user);
-    io.emit(user.connected ? USER_CONNECTED : USER_DISCONNECTED, user);
-    response.send(user);
-  });
+  app.post(
+    '/users',
+    passport.authenticate('basic', { session: true }),
+    async ({ body: user }, response) => {
+      await storageService.sessionRepository.saveSession(user.sessionId, user);
+      io.emit(user.connected ? USER_CONNECTED : USER_DISCONNECTED, user);
+      response.send(user);
+    },
+  );
 
-  app.listen(HTTP_PORT);
+  app.listen(env.httpPort);
 };

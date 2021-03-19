@@ -1,7 +1,7 @@
-import { Message } from '../../types';
+import { ChatMessage } from '../../types';
 
 export interface MessageRepository {
-  saveMessage(message: Message): Promise<void>;
+  saveMessage(message: ChatMessage): Promise<void>;
 
-  findMessagesForUser(userId: string): Promise<Array<Message>>;
+  findMessagesForUser(userId: string): Promise<Array<ChatMessage>>;
 }

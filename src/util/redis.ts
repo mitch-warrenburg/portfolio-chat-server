@@ -7,7 +7,6 @@ IORedis.prototype.deleteMatching = async function (pattern: string) {
   const keys = await redis.keys(pattern);
   return Promise.all(
     keys.map(async (key) => {
-      console.log('deleting', key);
       return redis.del(key);
     }),
   );

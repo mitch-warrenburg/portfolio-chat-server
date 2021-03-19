@@ -1,19 +1,27 @@
+import env from '../env';
 import { Server } from 'socket.io';
 import { StorageService } from '../store';
+import { SOCKET_CONNECTED } from '../constants';
 import { createAdapter } from 'socket.io-redis';
 import { SessionSocket, RedisExtended } from '../types';
 import { createSessionMiddleware } from '../middleware';
-import { WS_PORT, SOCKET_CONNECTED, CORS_CONFIG } from '../constants';
 import { handlePrivateMessage, handleSessionDisconnect } from '../handlers';
 import {
   joinRoom,
   emitNewSessionDetails,
+  initAdminDefaultSession,
   emitUserSessionsWithMessages,
   broadcastUserSessionConnected,
 } from '../util';
 
 export default (redisClient: RedisExtended, storageService: StorageService) => {
-  const io = new Server(WS_PORT, { cors: CORS_CONFIG });
+  initAdminDefaultSession(storageService).then(() =>
+    console.log('Added default admin session.'),
+  );
+
+  const io = new Server(env.wsPort, {
+    cors: { origin: env.corsOrigins, methods: env.corsMethods },
+  });
 
   io.adapter(
     createAdapter({

@@ -13,6 +13,7 @@
     "@types/cookie-parser": "^1.4.2",
     "@types/express": "^4.17.11",
     "@types/express-session": "^1.17.3",
+    "@types/ioredis": "^4.22.0",
     "@types/jest": "^26.0.19",
     "@types/lodash": "^4.14.168",
     "@types/morgan": "^1.9.2",
@@ -37,11 +38,11 @@
     "yarn-run-all": "^3.1.1"
   },
   "dependencies": {
-    "@types/ioredis": "^4.22.0",
     "bcrypt": "^5.0.1",
     "body-parser": "^1.19.0",
     "connect-redis": "^5.1.0",
     "cookie-parser": "^1.4.5",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "ioredis": "^4.24.2",
@@ -56,10 +57,10 @@
     "winston": "^3.3.3"
   },
   "scripts": {
-    "start": "tsnd --respawn --deps --cls --exit-child --rs --pretty --log-error src/main.ts",
-    "start:debug": "DEBUG=* yarn start",
+    "start": "NODE_ENV=development tsnd --respawn --deps --cls --exit-child --rs --pretty --log-error src/main.ts",
+    "start:debug": "DEBUG=socket.io:client* yarn start",
     "clean": "rimraf coverage build tmp",
-    "build": "yarn clean && tsc -p tsconfig.release.json",
+    "build": "yarn clean && tsc --outDir build --noEmit false && cp .env build",
     "build:watch": "tsc -w -p tsconfig.release.json",
     "test": "jest --coverage",
     "test:watch": "jest --watch",

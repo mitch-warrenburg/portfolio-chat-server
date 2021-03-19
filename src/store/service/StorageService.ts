@@ -5,8 +5,8 @@ import RedisSessionRepository from '../session/RedisSessionRepository';
 import RedisMessageRepository from '../messaging/RedisMessageRepository';
 import {
   Session,
-  Message,
-  AdminUser,
+  ChatMessage,
+  User,
   SessionSocket,
   SessionWithMessages,
 } from '../../types';
@@ -42,19 +42,19 @@ export default class StorageService {
     await this._adminRepository.saveUser(username, password);
   }
 
-  async findAdminUser(username: string): Promise<AdminUser | undefined> {
+  async findAdminUser(username: string): Promise<User | undefined> {
     return this._adminRepository.findUser(username);
   }
 
   async deleteAllAdminUsers(): Promise<void> {
-    await this._adminRepository.deleteKeysMatching('username:*');
+    await this._adminRepository.deleteKeysMatching('admin:*');
   }
 
-  async saveMessage(message: Message): Promise<void> {
+  async saveMessage(message: ChatMessage): Promise<void> {
     await this._messageRepository.saveMessage(message);
   }
 
-  async findMessagesForUser(userId: string): Promise<Array<Message>> {
+  async findMessagesForUser(userId: string): Promise<Array<ChatMessage>> {
     return this._messageRepository.findMessagesForUser(userId);
   }
 
@@ -62,12 +62,12 @@ export default class StorageService {
     return this._sessionRepository.findSession(id);
   }
 
-  async saveSession(socket: SessionSocket, connected: boolean) {
+  async saveSession(socket: SessionSocket, connected: boolean, eternal = false) {
     await this._sessionRepository.saveSession(socket.sessionId, {
       connected,
       userId: socket.userId,
       username: socket.username,
-    });
+    }, eternal);
   }
 
   async getUserSessionsWithMessages(

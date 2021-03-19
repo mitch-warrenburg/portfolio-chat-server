@@ -22,8 +22,12 @@ export default class RedisSessionRepository implements SessionRepository {
       .then(mapSession);
   }
 
-  async saveSession(id: string, { userId, username, connected }: Session) {
-    await this.redisClient
+  async saveSession(
+    id: string,
+    { userId, username, connected }: Session,
+    eternal = false,
+  ) {
+    const command = await this.redisClient
       .multi()
       .hset(
         `session:${id}`,
@@ -33,9 +37,11 @@ export default class RedisSessionRepository implements SessionRepository {
         username,
         'connected',
         `${connected}`,
-      )
-      .expire(`session:${id}`, SESSION_TTL)
-      .exec();
+      );
+
+    return eternal
+      ? command.exec()
+      : command.expire(`session:${id}`, SESSION_TTL).exec();
   }
 
   async findAllSessions(): Promise<Array<Session>> {

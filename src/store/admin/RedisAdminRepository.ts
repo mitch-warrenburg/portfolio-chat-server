@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { AdminRepository } from './types';
-import { AdminUser, RedisExtended } from '../../types';
+import { User, RedisExtended } from '../../types';
 
 export default class RedisAdminRepository implements AdminRepository {
   private redisClient: RedisExtended;
@@ -14,13 +14,13 @@ export default class RedisAdminRepository implements AdminRepository {
 
     await this.redisClient
       .multi()
-      .hset(`user:${username}`, 'username', username, 'password', passwordHash)
+      .hset(`admin:${username}`, 'username', username, 'password', passwordHash)
       .exec();
   }
 
-  async findUser(username: string): Promise<AdminUser | undefined> {
+  async findUser(username: string): Promise<User | undefined> {
     return this.redisClient
-      .hmget(`user:${username}`, 'username', 'password')
+      .hmget(`admin:${username}`, 'username', 'password')
       .then(([username, password]) =>
         username ? { username, password } : undefined,
       );
