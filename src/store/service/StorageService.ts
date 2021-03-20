@@ -6,7 +6,7 @@ import RedisMessageRepository from '../messaging/RedisMessageRepository';
 import {
   Session,
   ChatMessage,
-  User,
+  AdminUser,
   SessionSocket,
   SessionWithMessages,
 } from '../../types';
@@ -38,11 +38,15 @@ export default class StorageService {
     return this._adminRepository;
   }
 
-  async saveAdminUser(username: string, password: string): Promise<void> {
-    await this._adminRepository.saveUser(username, password);
+  async saveAdminUser(
+    username: string,
+    password: string,
+    secret: string,
+  ): Promise<void> {
+    await this._adminRepository.saveUser(username, password, secret);
   }
 
-  async findAdminUser(username: string): Promise<User | undefined> {
+  async findAdminUser(username: string): Promise<AdminUser | undefined> {
     return this._adminRepository.findUser(username);
   }
 
@@ -62,12 +66,20 @@ export default class StorageService {
     return this._sessionRepository.findSession(id);
   }
 
-  async saveSession(socket: SessionSocket, connected: boolean, eternal = false) {
-    await this._sessionRepository.saveSession(socket.sessionId, {
-      connected,
-      userId: socket.userId,
-      username: socket.username,
-    }, eternal);
+  async saveSession(
+    socket: SessionSocket,
+    connected: boolean,
+    eternal = false,
+  ) {
+    await this._sessionRepository.saveSession(
+      socket.sessionId,
+      {
+        connected,
+        userId: socket.userId,
+        username: socket.username,
+      },
+      eternal,
+    );
   }
 
   async getUserSessionsWithMessages(

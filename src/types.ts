@@ -1,9 +1,10 @@
 import { Socket } from 'socket.io';
 import { Redis, RedisOptions } from 'ioredis';
 
-export interface User {
+export interface AdminUser {
   password: string;
   username: string;
+  secret: string;
 }
 
 export interface SessionSocket extends Socket {

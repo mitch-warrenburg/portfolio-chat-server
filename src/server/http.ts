@@ -4,7 +4,7 @@ import express from 'express';
 import passport from 'passport';
 import { Server } from 'socket.io';
 import bodyParser from 'body-parser';
-import { User } from '../types';
+import { AdminUser } from '../types';
 import cookieParser from 'cookie-parser';
 import { StorageService } from '../store';
 import { authenticateAdmin } from '../auth';
@@ -14,14 +14,12 @@ import {
   PRIVATE_MESSAGE,
   USER_DISCONNECTED,
 } from '../constants';
+import jwt from 'jsonwebtoken';
 
 const app = express();
 
 export default async (io: Server, storageService: StorageService) => {
-  await storageService.deleteAllAdminUsers();
-  await storageService.saveAdminUser(env.adminUsername, env.adminPassword);
-
-  passport.serializeUser(async ({ username }: User, done) => {
+  passport.serializeUser(async ({ username }: AdminUser, done) => {
     done(null, username);
   });
 
@@ -63,13 +61,21 @@ export default async (io: Server, storageService: StorageService) => {
   app.post(
     '/admin/auth',
     passport.authenticate('basic', { session: true }),
-    (request, response) => {
-      const { username } = request.user as User;
-      response.json({
-        username,
-        userId: env.adminUserId,
-        sessionId: env.adminSessionId,
-      });
+    async (_, response) => {
+      const admin = await storageService.findAdminUser(env.adminUsername);
+
+      if (!admin) {
+        response.status(500).json({
+          message: 'No admin user found for the configured credentials.',
+        });
+      } else {
+        response.json({
+          userId: env.adminUserId,
+          username: env.adminUsername,
+          sessionId: env.adminSessionId,
+          token: jwt.sign(env.adminUsername, admin.secret),
+        });
+      }
     },
   );
 

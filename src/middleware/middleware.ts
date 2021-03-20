@@ -2,26 +2,24 @@ import env from '../env';
 import { v4 as uuid } from 'uuid';
 import { SessionSocket } from '../types';
 import { StorageService } from '../store';
-import { authenticateAdmin } from '../auth';
+import { verifyAdminJwt } from '../auth';
+import { TokenAuthError } from '../errors';
+
+const _isAdminUser = (socket: SessionSocket) => {
+  return socket.handshake.auth.userId === env.adminUserId;
+};
 
 const _handleAdminConnection = async (
   socket: SessionSocket,
   storageService: StorageService,
 ) => {
-  const { adminPassword, username } = socket.handshake.auth;
-  const isValid = await authenticateAdmin(
-    storageService,
-    username,
-    adminPassword,
-  );
-
-  if (isValid) {
+  if (await verifyAdminJwt(socket, storageService)) {
     socket.userId = env.adminUserId;
     socket.username = env.adminUsername;
     socket.sessionId = env.adminSessionId;
+  } else {
+    throw new Error('Invalid token.');
   }
-
-  return isValid;
 };
 
 const _handleExistingConnection = async (
@@ -54,11 +52,17 @@ export const createSessionMiddleware = (
   const { username } = socket.handshake.auth;
 
   if (!username) {
-    return next(new Error('invalid username'));
+    return next(new Error('Invalid username.'));
   }
 
-  if (await _handleAdminConnection(socket, storageService)) {
-    return next();
+  if (_isAdminUser(socket)) {
+    try {
+      await _handleAdminConnection(socket, storageService);
+      return next();
+    } catch (e) {
+      console.error(e);
+      return next(new TokenAuthError());
+    }
   }
 
   if (await _handleExistingConnection(socket, storageService)) {

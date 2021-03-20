@@ -8,12 +8,10 @@ const defaultAdminSession = {
   sessionId: env.adminSessionId,
 } as SessionSocket;
 
-export const initAdminDefaultSession = async (
+export const refreshAdminDefaultSession = async (
   storageService: StorageService,
 ) => {
   const session = await storageService.findSession(env.adminSessionId);
-
-  console.log(session);
 
   if (!session) {
     await storageService.saveSession(defaultAdminSession, false, true);

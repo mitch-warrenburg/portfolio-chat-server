@@ -9,15 +9,11 @@ import { handlePrivateMessage, handleSessionDisconnect } from '../handlers';
 import {
   joinRoom,
   emitNewSessionDetails,
-  initAdminDefaultSession,
   emitUserSessionsWithMessages,
   broadcastUserSessionConnected,
 } from '../util';
 
 export default (redisClient: RedisExtended, storageService: StorageService) => {
-  initAdminDefaultSession(storageService).then(() =>
-    console.log('Added default admin session.'),
-  );
 
   const io = new Server(env.wsPort, {
     cors: { origin: env.corsOrigins, methods: env.corsMethods },
