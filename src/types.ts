@@ -19,13 +19,19 @@ export interface ChatMessage {
   content: string;
 }
 
+export interface TypingEvent {
+  to: string;
+  from: string;
+  typing: boolean;
+}
+
 export interface Session {
   userId: string;
   username: string;
   connected: boolean;
 }
 
-export interface SessionWithMessages extends Session {
+export interface User {
   userId: string;
   username: string;
   connected: boolean;
@@ -52,3 +58,17 @@ export interface RedisExtended extends Redis {
 
   deleteMatching(pattern: string): Promise<void>;
 }
+
+export type ChatEventType =
+  | 'NEW_SESSION'
+  | 'USER_SESSIONS'
+  | 'TYPING_STATUS'
+  | 'USER_CONNECTED'
+  | 'PRIVATE_MESSAGE'
+  | 'SOCKET_CONNECTED'
+  | 'USER_DISCONNECTED'
+  | 'SOCKET_DISCONNECTED'
+  | 'connection'
+  | 'disconnect';
+
+export type TypingEventType = 'TYPING_STARTED' | 'TYPING_STOPPED';

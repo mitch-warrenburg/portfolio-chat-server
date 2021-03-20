@@ -1,2 +1,2 @@
-export * from './messageHandler';
+export * from './messageHandlers';
 export * from './disconnectHandler';

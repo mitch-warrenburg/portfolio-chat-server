@@ -5,7 +5,11 @@ import { SOCKET_CONNECTED } from '../constants';
 import { createAdapter } from 'socket.io-redis';
 import { SessionSocket, RedisExtended } from '../types';
 import { createSessionMiddleware } from '../middleware';
-import { handlePrivateMessage, handleSessionDisconnect } from '../handlers';
+import {
+  handleTypingEvents,
+  handlePrivateMessage,
+  handleSessionDisconnect,
+} from '../handlers';
 import {
   joinRoom,
   emitNewSessionDetails,
@@ -14,7 +18,6 @@ import {
 } from '../util';
 
 export default (redisClient: RedisExtended, storageService: StorageService) => {
-
   const io = new Server(env.wsPort, {
     cors: { origin: env.corsOrigins, methods: env.corsMethods },
   });
@@ -39,6 +42,7 @@ export default (redisClient: RedisExtended, storageService: StorageService) => {
     emitUserSessionsWithMessages(socket, sessions);
     broadcastUserSessionConnected(socket);
 
+    handleTypingEvents(socket);
     handlePrivateMessage(socket, storageService);
     handleSessionDisconnect(io, socket, storageService);
   };

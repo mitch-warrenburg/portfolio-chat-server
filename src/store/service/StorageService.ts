@@ -8,7 +8,7 @@ import {
   ChatMessage,
   AdminUser,
   SessionSocket,
-  SessionWithMessages,
+  User,
 } from '../../types';
 
 export default class StorageService {
@@ -84,7 +84,7 @@ export default class StorageService {
 
   async getUserSessionsWithMessages(
     socket: SessionSocket,
-  ): Promise<Array<SessionWithMessages>> {
+  ): Promise<Array<User>> {
     const [messages, sessions] = await Promise.all([
       this.findMessagesForUser(socket.userId),
       this._sessionRepository.findAllSessions(),

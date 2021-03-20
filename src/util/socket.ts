@@ -1,4 +1,4 @@
-import { SessionSocket, SessionWithMessages } from '../types';
+import { SessionSocket, User } from '../types';
 import {
   NEW_SESSION,
   USER_SESSIONS,
@@ -17,7 +17,7 @@ export const emitNewSessionDetails = (socket: SessionSocket) => {
 
 export const emitUserSessionsWithMessages = (
   socket: SessionSocket,
-  sessions: Array<SessionWithMessages>,
+  sessions: Array<User>,
 ) => socket.emit(USER_SESSIONS, sessions);
 
 export const broadcastUserSessionConnected = (socket: SessionSocket) => {

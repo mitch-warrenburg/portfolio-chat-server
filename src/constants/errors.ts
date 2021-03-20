@@ -1,1 +1,1 @@
-export const TOKEN_AUTH_ERROR = 'Authentication Error'
+export const TOKEN_AUTH_ERROR = 'Authentication Error';

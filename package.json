@@ -68,7 +68,7 @@
     "test:watch": "jest --watch",
     "ts": "tsc",
     "lint": "eslint --fix 'src/**/*.{js,ts,jsx,tsx}'",
-    "format": "prettier --write 'src/**/*.{js,ts,jsx,tsx}'",
+    "format": "prettier --write 'src/**/*.{js,ts}'",
     "tidy": "run-s ts format lint && git add ."
   }
 }
