@@ -1,6 +1,7 @@
 import env from '../env';
+import AuthService from '../auth';
 import { Server } from 'socket.io';
-import { StorageService } from '../store';
+import StorageService from '../store';
 import { SOCKET_CONNECTED } from '../constants';
 import { createAdapter } from 'socket.io-redis';
 import { SessionSocket, RedisExtended } from '../types';
@@ -17,7 +18,11 @@ import {
   broadcastUserSessionConnected,
 } from '../util';
 
-export default (redisClient: RedisExtended, storageService: StorageService) => {
+export default (
+  redisClient: RedisExtended,
+  storageService: StorageService,
+  authService: AuthService,
+) => {
   const io = new Server(env.wsPort, {
     cors: { origin: env.corsOrigins, methods: env.corsMethods },
   });
@@ -29,7 +34,7 @@ export default (redisClient: RedisExtended, storageService: StorageService) => {
     }),
   );
 
-  io.use(createSessionMiddleware(storageService));
+  io.use(createSessionMiddleware(authService, storageService));
 
   const onConnection = async (socket: SessionSocket) => {
     await storageService.saveSession(socket, true);

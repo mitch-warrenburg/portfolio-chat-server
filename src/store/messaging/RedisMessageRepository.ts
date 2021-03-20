@@ -1,7 +1,7 @@
-import { MessageRepository } from './types';
-import { CONVERSATION_TTL } from '../../constants';
 import { Redis } from 'ioredis';
+import { MessageRepository } from './types';
 import { ChatMessage } from '../../types';
+import { CONVERSATION_TTL } from '../../constants';
 
 export default class RedisMessageRepository implements MessageRepository {
   private redisClient: Redis;

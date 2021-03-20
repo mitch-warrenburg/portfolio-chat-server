@@ -1,24 +1,28 @@
 import cors from 'cors';
 import env from '../env';
 import express from 'express';
+import jwt from 'jsonwebtoken';
 import passport from 'passport';
+import AuthService from '../auth';
 import { Server } from 'socket.io';
 import bodyParser from 'body-parser';
 import { AdminUser } from '../types';
+import StorageService from '../store';
 import cookieParser from 'cookie-parser';
-import { StorageService } from '../store';
-import { authenticateAdmin } from '../auth';
 import { BasicStrategy } from 'passport-http';
 import {
   USER_CONNECTED,
   PRIVATE_MESSAGE,
   USER_DISCONNECTED,
 } from '../constants';
-import jwt from 'jsonwebtoken';
 
 const app = express();
 
-export default async (io: Server, storageService: StorageService) => {
+export default async (
+  io: Server,
+  authService: AuthService,
+  storageService: StorageService,
+) => {
   passport.serializeUser(async ({ username }: AdminUser, done) => {
     done(null, username);
   });
@@ -38,11 +42,7 @@ export default async (io: Server, storageService: StorageService) => {
   passport.use(
     new BasicStrategy(async (username, password, done) => {
       try {
-        const isValid = await authenticateAdmin(
-          storageService,
-          username,
-          password,
-        );
+        const isValid = await authService.authenticateAdmin(username, password);
         done(null, isValid ? { username, password } : false);
       } catch (e) {
         done(e);
@@ -78,6 +78,28 @@ export default async (io: Server, storageService: StorageService) => {
       }
     },
   );
+
+  app.post('/admin/logout', async (request, response) => {
+    const authHeader = request.header('Authorization');
+
+    if (!authHeader) {
+      response.sendStatus(401);
+    }
+
+    try {
+      if (await authService.authenticateHttpJwt(authHeader)) {
+        await authService.refreshAdminUser();
+        response.json({
+          username: env.adminUsername,
+          message: 'Successfully logged out.',
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
+    response.sendStatus(403);
+  });
 
   app.post(
     '/messages',

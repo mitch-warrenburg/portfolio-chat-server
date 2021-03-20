@@ -1,8 +1,8 @@
 import env from '../env';
 import { v4 as uuid } from 'uuid';
+import AuthService from '../auth';
+import StorageService from '../store';
 import { SessionSocket } from '../types';
-import { StorageService } from '../store';
-import { verifyAdminJwt } from '../auth';
 import { TokenAuthError } from '../errors';
 
 const _isAdminUser = (socket: SessionSocket) => {
@@ -11,9 +11,9 @@ const _isAdminUser = (socket: SessionSocket) => {
 
 const _handleAdminConnection = async (
   socket: SessionSocket,
-  storageService: StorageService,
+  authService: AuthService,
 ) => {
-  if (await verifyAdminJwt(socket, storageService)) {
+  if (await authService.authenticateWsJwt(socket)) {
     socket.userId = env.adminUserId;
     socket.username = env.adminUsername;
     socket.sessionId = env.adminSessionId;
@@ -47,17 +47,18 @@ const _handleFirstConnection = (socket: SessionSocket, username: string) => {
 };
 
 export const createSessionMiddleware = (
+  authService: AuthService,
   storageService: StorageService,
 ) => async (socket: SessionSocket, next: (e?: any) => any) => {
   const { username } = socket.handshake.auth;
 
   if (!username) {
-    return next(new Error('Invalid username.'));
+    return next(new Error('Invalid Username'));
   }
 
   if (_isAdminUser(socket)) {
     try {
-      await _handleAdminConnection(socket, storageService);
+      await _handleAdminConnection(socket, authService);
       return next();
     } catch (e) {
       console.error(e);

@@ -1,3 +1,4 @@
 export * from './session';
 export * from './messaging';
-export { default as StorageService } from './service';
+export * from './service';
+export { default } from './service';

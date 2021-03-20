@@ -1,6 +1,6 @@
 import { Server } from 'socket.io';
+import StorageService from '../store';
 import { SessionSocket } from '../types';
-import { StorageService } from '../store';
 import { SOCKET_DISCONNECTED } from '../constants';
 import { broadcastUserSessionDisconnected } from '../util';
 

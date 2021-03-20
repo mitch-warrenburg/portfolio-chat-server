@@ -1,4 +1,4 @@
-import { StorageService } from '../store';
+import StorageService from '../store';
 import { PRIVATE_MESSAGE, TYPING_STATUS } from '../constants';
 import { SessionSocket, ChatMessage, TypingEvent } from '../types';
 
