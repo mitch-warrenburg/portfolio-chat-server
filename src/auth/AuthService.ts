@@ -42,7 +42,7 @@ export default class AuthService {
 
   async authenticateHttpJwt(authHeader: string): Promise<boolean> {
     try {
-      const token = authHeader.replace('bearer', ' ').trim();
+      const token = authHeader.replace('Bearer', ' ').trim();
       console.log(authHeader);
       console.log(token);
 

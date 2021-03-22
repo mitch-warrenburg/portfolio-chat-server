@@ -1,16 +1,15 @@
-import { Redis } from 'ioredis';
 import { MessageRepository } from './types';
-import { ChatMessage } from '../../types';
 import { CONVERSATION_TTL } from '../../constants';
+import { ChatMessage, RedisExtended } from '../../types';
 
 export default class RedisMessageRepository implements MessageRepository {
-  private redisClient: Redis;
+  private redisClient: RedisExtended;
 
-  constructor(redisClient) {
+  constructor(redisClient: RedisExtended) {
     this.redisClient = redisClient;
   }
 
-  async saveMessage(message): Promise<void> {
+  async saveMessage(message): Promise<ChatMessage> {
     const value = JSON.stringify(message);
     await this.redisClient
       .multi()
@@ -19,6 +18,7 @@ export default class RedisMessageRepository implements MessageRepository {
       .expire(`messages:${message.from}`, CONVERSATION_TTL)
       .expire(`messages:${message.to}`, CONVERSATION_TTL)
       .exec();
+    return message;
   }
 
   async findMessagesForUser(userId: string): Promise<Array<ChatMessage>> {

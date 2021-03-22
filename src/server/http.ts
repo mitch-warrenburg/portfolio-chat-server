@@ -52,11 +52,11 @@ export default async (
 
   /* public routes */
   app.get('/health', (_, response) => {
-    response.json({ status: 'UP' });
+    response.status(200).json({ status: 'UP' });
   });
 
   app.get('/api/v1/chat/defaultSendToUserId', (_, response) => {
-    response.json({ userId: env.adminUserId });
+    response.status(200).json({ userId: env.adminUserId });
   });
 
   /* protected routes */
@@ -64,25 +64,74 @@ export default async (
   app.post(
     '/api/v1/chat/messages',
     passport.authenticate('basic', { session: true }),
-    async ({ body: message }, response) => {
+    async ({ body }, response) => {
+      const message = await storageService.saveMessage(body);
+      response.status(201).send(message);
       io.emit(PRIVATE_MESSAGE, message);
-      await storageService.saveMessage(message);
-      response.send(message);
     },
   );
 
   app.post(
-    '/api/v1/chat/users',
+    '/api/v1/chat/sessions',
     passport.authenticate('basic', { session: true }),
-    async ({ body: user }, response) => {
-      await storageService.sessionRepository.saveSession(user.sessionId, user);
-      io.emit(user.connected ? USER_CONNECTED : USER_DISCONNECTED, user);
-      response.send(user);
+    async ({ body }, response) => {
+      const session = await storageService.createSession(body);
+      io.emit(session.connected ? USER_CONNECTED : USER_DISCONNECTED, session);
+      response.status(201).send(session);
+    },
+  );
+
+  app.get(
+    '/api/v1/chat/sessions',
+    passport.authenticate('basic', { session: true }),
+    async (_, response) => {
+      const sessions = await storageService.findAllSessions();
+      response.send({ sessions });
+    },
+  );
+
+  app.get(
+    '/api/v1/chat/sessions/:id',
+    passport.authenticate('basic', { session: true }),
+    async ({ params }, response) => {
+      const session = await storageService.findSession(params['id']);
+      if (session) {
+        response.send(session);
+      } else {
+        response.sendStatus(404);
+      }
+    },
+  );
+
+  app.delete(
+    '/api/v1/chat/sessions',
+    passport.authenticate('basic', { session: true }),
+    async (_, response) => {
+      const sessionIds = await storageService.deleteAllSessions();
+
+      if (sessionIds) {
+        response.send({ sessionIds });
+      } else {
+        response.sendStatus(404);
+      }
+    },
+  );
+
+  app.delete(
+    '/api/v1/chat/sessions/:id',
+    passport.authenticate('basic', { session: true }),
+    async ({ params }, response) => {
+      const sessionId = await storageService.deleteSession(params['id']);
+      if (sessionId) {
+        response.send({ sessionId });
+      } else {
+        response.sendStatus(404);
+      }
     },
   );
 
   app.post(
-    '/admin/auth',
+    '/api/v1/admin/auth',
     passport.authenticate('basic', { session: true }),
     async (_, response) => {
       const admin = await storageService.findAdminUser(env.adminUsername);
@@ -92,7 +141,7 @@ export default async (
           message: 'No admin user found for the configured credentials.',
         });
       } else {
-        response.json({
+        response.status(200).json({
           userId: env.adminUserId,
           username: env.adminUsername,
           sessionId: env.adminSessionId,
@@ -102,7 +151,7 @@ export default async (
     },
   );
 
-  app.post('/admin/logout', async (request, response) => {
+  app.post('/api/v1/admin/logout', async (request, response) => {
     const authHeader = request.header('Authorization');
 
     if (!authHeader) {

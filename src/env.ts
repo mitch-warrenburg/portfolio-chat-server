@@ -27,8 +27,6 @@ export const loadEnv = (): Environment => {
     adminSessionId: ADMIN_SESSION_ID,
   };
 
-  console.log(env);
-
   const missingVariablesMessage = Object.entries(env)
     .filter(([_, value]) => !value)
     .map(([key]) => `Environment variable required but not found: ${key}`)

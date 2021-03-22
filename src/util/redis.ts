@@ -1,15 +1,15 @@
 import IORedis from 'ioredis';
 import { RedisExtended } from '../types';
 
-IORedis.prototype.deleteMatching = async function (pattern: string) {
+IORedis.prototype.deleteMatching = async function (
+  pattern: string,
+): Promise<Array<string> | undefined> {
   const redis = this;
 
   const keys = await redis.keys(pattern);
-  return Promise.all(
-    keys.map(async (key) => {
-      return redis.del(key);
-    }),
-  );
+  await Promise.all(keys.map(async (key) => redis.del(key)));
+
+  return keys?.length ? keys : undefined;
 };
 
 // @ts-ignore

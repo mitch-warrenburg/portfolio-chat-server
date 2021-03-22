@@ -53,7 +53,7 @@
     "start": "NODE_ENV=development tsnd --respawn --deps --cls --exit-child --rs --pretty --log-error src/main.ts",
     "start:debug": "DEBUG=socket.io:client* yarn start",
     "clean": "rimraf coverage build tmp",
-    "build": "yarn clean && tsc --outDir build --noEmit false && cp .env build",
+    "build": "yarn clean && tsc --outDir build --noEmit false",
     "buildit": "tsc --outDir build --noEmit false && cp .env build",
     "build:watch": "tsc -w -p tsconfig.release.json",
     "test": "jest --coverage",

@@ -1,4 +1,3 @@
-import { Redis } from 'ioredis';
 import { groupBy } from 'lodash';
 import { RedisAdminRepository } from '../admin';
 import RedisSessionRepository from '../session/RedisSessionRepository';
@@ -9,6 +8,7 @@ import {
   AdminUser,
   ChatMessage,
   SessionSocket,
+  RedisExtended,
 } from '../../types';
 
 export default class StorageService {
@@ -16,7 +16,7 @@ export default class StorageService {
   private readonly _messageRepository: RedisMessageRepository;
   private readonly _sessionRepository: RedisSessionRepository;
 
-  constructor(redisClient: Redis) {
+  constructor(redisClient: RedisExtended) {
     this._messageRepository = new RedisMessageRepository(
       redisClient.duplicate(),
     );
@@ -24,18 +24,6 @@ export default class StorageService {
       redisClient.duplicate(),
     );
     this._adminRepository = new RedisAdminRepository(redisClient.duplicate());
-  }
-
-  get messageRepository(): RedisMessageRepository {
-    return this._messageRepository;
-  }
-
-  get sessionRepository(): RedisSessionRepository {
-    return this._sessionRepository;
-  }
-
-  get adminRepository(): RedisAdminRepository {
-    return this._adminRepository;
   }
 
   async saveAdminUser(
@@ -54,16 +42,35 @@ export default class StorageService {
     await this._adminRepository.deleteKeysMatching('admin:*');
   }
 
-  async saveMessage(message: ChatMessage): Promise<void> {
-    await this._messageRepository.saveMessage(message);
+  async deleteAllSessions(): Promise<Array<string> | undefined> {
+    return await this._sessionRepository.deleteKeysMatching('session:*');
   }
 
-  async findMessagesForUser(userId: string): Promise<Array<ChatMessage>> {
-    return this._messageRepository.findMessagesForUser(userId);
+  async findAllSessions(): Promise<Array<Session>> {
+    return await this._sessionRepository.findAllSessions();
+  }
+
+  async createSession(session: Session): Promise<Session> {
+    return this._sessionRepository.saveSession(session);
+  }
+
+  async deleteSession(sessionId: string): Promise<string | undefined> {
+    const result = await this._sessionRepository.deleteKeysMatching(
+      `session:${sessionId}`,
+    );
+    return result?.length ? result[0] : undefined;
   }
 
   async findSession(id: string): Promise<Session | undefined> {
     return this._sessionRepository.findSession(id);
+  }
+
+  async saveMessage(message: ChatMessage): Promise<ChatMessage> {
+    return this._messageRepository.saveMessage(message);
+  }
+
+  async findMessagesForUser(userId: string): Promise<Array<ChatMessage>> {
+    return this._messageRepository.findMessagesForUser(userId);
   }
 
   async saveSession(
@@ -71,15 +78,13 @@ export default class StorageService {
     connected: boolean,
     eternal = false,
   ) {
-    await this._sessionRepository.saveSession(
-      socket.sessionId,
-      {
-        connected,
-        userId: socket.userId,
-        username: socket.username,
-      },
+    await this._sessionRepository.saveSession({
       eternal,
-    );
+      connected,
+      id: socket.sessionId,
+      userId: socket.userId,
+      username: socket.username,
+    });
   }
 
   async getUserSessionsWithMessages(

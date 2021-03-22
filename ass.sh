@@ -1,1 +1,0 @@
-docker build -t $_IMAGE:$COMMIT_SHA -t $_IMAGE:latest --build-arg REDIS_HOST=$$REDIS_HOST --build-arg ADMIN_USER_ID=$$ADMIN_USER_ID --build-arg ADMIN_SESSION_ID=$$ADMIN_SESSION_ID --build-arg ADMIN_USER_NAME=$$ADMIN_USER_NAME --build-arg ADMIN_PASSWORD=$$ADMIN_PASSWORD .

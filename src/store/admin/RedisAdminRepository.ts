@@ -38,7 +38,9 @@ export default class RedisAdminRepository implements AdminRepository {
       );
   }
 
-  async deleteKeysMatching(pattern: string): Promise<void> {
-    await this.redisClient.deleteMatching(pattern);
+  async deleteKeysMatching(
+    pattern: string,
+  ): Promise<Array<string> | undefined> {
+    return await this.redisClient.deleteMatching(pattern);
   }
 }

@@ -8,8 +8,9 @@ export default class MemoryMessageRepository implements MessageRepository {
     this.messages = [];
   }
 
-  async saveMessage(message: ChatMessage): Promise<void> {
+  async saveMessage(message: ChatMessage): Promise<ChatMessage> {
     this.messages.push(message);
+    return message;
   }
 
   async findMessagesForUser(userId: string): Promise<Array<ChatMessage>> {

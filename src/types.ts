@@ -26,9 +26,11 @@ export interface TypingEvent {
 }
 
 export interface Session {
+  id: string;
   userId: string;
   username: string;
   connected: boolean;
+  eternal?: boolean;
 }
 
 export interface User {
@@ -51,13 +53,15 @@ export interface Environment {
 }
 
 export interface RedisExtended extends Redis {
-  new(options?: RedisOptions): RedisExtended;
+  new (options?: RedisOptions): RedisExtended;
 
-  new(port?: number, host?: string, options?: RedisOptions): RedisExtended;
+  new (port?: number, host?: string, options?: RedisOptions): RedisExtended;
 
-  new(host?: string, options?: RedisOptions): RedisExtended;
+  new (host?: string, options?: RedisOptions): RedisExtended;
 
-  deleteMatching(pattern: string): Promise<void>;
+  duplicate(): RedisExtended;
+
+  deleteMatching(pattern: string): Promise<Array<string> | undefined>;
 }
 
 export type ChatEventType =
@@ -71,5 +75,3 @@ export type ChatEventType =
   | 'SOCKET_DISCONNECTED'
   | 'connection'
   | 'disconnect';
-
-export type TypingEventType = 'TYPING_STARTED' | 'TYPING_STOPPED';

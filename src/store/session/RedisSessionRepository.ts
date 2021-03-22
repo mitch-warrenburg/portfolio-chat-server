@@ -1,47 +1,65 @@
-import { Redis } from 'ioredis';
-import { Session } from '../../types';
 import { SessionRepository } from './types';
 import { SESSION_TTL } from '../../constants';
+import { Session, RedisExtended } from '../../types';
 
-const mapSession = ([userId, username, connected]): Session | undefined => {
+const mapSession = ([id, userId, username, connected, eternal]):
+  | Session
+  | undefined => {
   return userId
-    ? { userId, username, connected: connected === 'true' }
+    ? {
+        id,
+        userId,
+        username,
+        connected: connected === 'true',
+        eternal: eternal === 'true',
+      }
     : undefined;
 };
 
 export default class RedisSessionRepository implements SessionRepository {
-  private redisClient: Redis;
+  private redisClient: RedisExtended;
 
-  constructor(redisClient: Redis) {
+  constructor(redisClient: RedisExtended) {
     this.redisClient = redisClient;
   }
 
   async findSession(id: string): Promise<Session> {
     return this.redisClient
-      .hmget(`session:${id}`, 'userId', 'username', 'connected')
+      .hmget(
+        `session:${id}`,
+        'id',
+        'userId',
+        'username',
+        'connected',
+        'eternal',
+      )
       .then(mapSession);
   }
 
-  async saveSession(
-    id: string,
-    { userId, username, connected }: Session,
-    eternal = false,
-  ) {
+  async saveSession(session: Session): Promise<Session> {
+    const { id, userId, username, connected, eternal = false } = session;
+
     const command = await this.redisClient
       .multi()
       .hset(
         `session:${id}`,
+        'id',
+        id,
         'userId',
         userId,
         'username',
         username,
         'connected',
         `${connected}`,
+        'eternal',
+        `${eternal}`,
       );
 
-    return eternal
-      ? command.exec()
-      : command.expire(`session:${id}`, SESSION_TTL).exec();
+    eternal
+      ? await command.exec()
+      : await command.expire(`session:${id}`, SESSION_TTL).exec();
+
+    return session;
   }
 
   async findAllSessions(): Promise<Array<Session>> {
@@ -63,16 +81,22 @@ export default class RedisSessionRepository implements SessionRepository {
 
     const commands = [];
     keys.forEach((key) => {
-      commands.push(['hmget', key, 'userId', 'username', 'connected']);
+      commands.push(['hmget', key, 'id', 'userId', 'username', 'connected', 'eternal']);
     });
 
     return await this.redisClient
       .multi(commands)
       .exec()
-      .then((results) => {
-        return results
+      .then((results) =>
+        results
           .map(([err, session]) => (err ? undefined : mapSession(session)))
-          .filter((v) => !!v);
-      });
+          .filter((v) => !!v),
+      );
+  }
+
+  async deleteKeysMatching(
+    pattern: string,
+  ): Promise<Array<string> | undefined> {
+    return await this.redisClient.deleteMatching(pattern);
   }
 }

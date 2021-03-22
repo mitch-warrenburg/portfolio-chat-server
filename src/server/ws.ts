@@ -24,6 +24,8 @@ export default (
   authService: AuthService,
 ) => {
   const io = new Server(env.wsPort, {
+    pingInterval: 5000,
+    transports: ['websocket'],
     cors: { origin: env.corsOrigins, methods: env.corsMethods },
   });
 

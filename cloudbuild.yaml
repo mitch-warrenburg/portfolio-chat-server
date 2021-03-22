@@ -35,9 +35,9 @@ substitutions:
   _IMAGE: gcr.io/warrenburg-portfolio/portfolio-chat-server
   _K8S_PATH: kubernetes/
   _APP: portfolio-chat-server
-  _REGION: us-west2
+  _REGION: us-central1
   _NAMESPACE: portfolio
-  _CLUSTER: portfolio-cluster
+  _CLUSTER: portfolio
   _OUTPUT_BUCKET_PATH: warrenburg-portfolio_cloudbuild/deploy
 availableSecrets:
   secretManager:

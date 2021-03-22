@@ -1,5 +1,5 @@
-import { SessionRepository } from './types';
 import { Session } from '../../types';
+import { SessionRepository } from './types';
 
 export default class MemorySessionRepository implements SessionRepository {
   private sessions: Map<string, Session>;
@@ -12,11 +12,16 @@ export default class MemorySessionRepository implements SessionRepository {
     return this.sessions.get(id);
   }
 
-  saveSession(id: string, session: Session) {
-    this.sessions.set(id, session);
+  async saveSession(session: Session): Promise<Session> {
+    this.sessions.set(session.id, session);
+    return session;
   }
 
   async findAllSessions(): Promise<Array<Session>> {
     return [...this.sessions.values()];
+  }
+
+  async deleteKeysMatching(_: string): Promise<Array<string> | undefined> {
+    return [];
   }
 }
