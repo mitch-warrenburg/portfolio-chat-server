@@ -51,12 +51,35 @@ export default async (
   );
 
   /* public routes */
+  app.get('/health', (_, response) => {
+    response.json({ status: 'UP' });
+  });
 
   app.get('/api/v1/chat/defaultSendToUserId', (_, response) => {
     response.json({ userId: env.adminUserId });
   });
 
   /* protected routes */
+
+  app.post(
+    '/api/v1/chat/messages',
+    passport.authenticate('basic', { session: true }),
+    async ({ body: message }, response) => {
+      io.emit(PRIVATE_MESSAGE, message);
+      await storageService.saveMessage(message);
+      response.send(message);
+    },
+  );
+
+  app.post(
+    '/api/v1/chat/users',
+    passport.authenticate('basic', { session: true }),
+    async ({ body: user }, response) => {
+      await storageService.sessionRepository.saveSession(user.sessionId, user);
+      io.emit(user.connected ? USER_CONNECTED : USER_DISCONNECTED, user);
+      response.send(user);
+    },
+  );
 
   app.post(
     '/admin/auth',
@@ -93,6 +116,7 @@ export default async (
           username: env.adminUsername,
           message: 'Successfully logged out.',
         });
+        return;
       }
     } catch (e) {
       console.error(e);
@@ -100,26 +124,6 @@ export default async (
 
     response.sendStatus(403);
   });
-
-  app.post(
-    '/messages',
-    passport.authenticate('basic', { session: true }),
-    async ({ body: message }, response) => {
-      io.emit(PRIVATE_MESSAGE, message);
-      await storageService.saveMessage(message);
-      response.send(message);
-    },
-  );
-
-  app.post(
-    '/users',
-    passport.authenticate('basic', { session: true }),
-    async ({ body: user }, response) => {
-      await storageService.sessionRepository.saveSession(user.sessionId, user);
-      io.emit(user.connected ? USER_CONNECTED : USER_DISCONNECTED, user);
-      response.send(user);
-    },
-  );
 
   app.listen(env.httpPort);
 };

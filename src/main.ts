@@ -1,9 +1,13 @@
+import env from './env';
 import { Redis } from './util';
 import AuthService from './auth';
 import StorageService from './store';
 import { wsServer, httpServer } from './server';
 
-const redisClient = new Redis();
+const redisClient = new Redis({
+  port: 6379,
+  host: env.redisHost,
+});
 const storageService = new StorageService(redisClient);
 const authService = new AuthService(storageService);
 

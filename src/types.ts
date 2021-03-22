@@ -41,6 +41,7 @@ export interface User {
 export interface Environment {
   wsPort: number;
   httpPort: number;
+  redisHost: string;
   corsOrigins: string;
   corsMethods: string;
   adminUserId: string;
@@ -50,11 +51,11 @@ export interface Environment {
 }
 
 export interface RedisExtended extends Redis {
-  new (options?: RedisOptions): RedisExtended;
+  new(options?: RedisOptions): RedisExtended;
 
-  new (port?: number, host?: string, options?: RedisOptions): RedisExtended;
+  new(port?: number, host?: string, options?: RedisOptions): RedisExtended;
 
-  new (host?: string, options?: RedisOptions): RedisExtended;
+  new(host?: string, options?: RedisOptions): RedisExtended;
 
   deleteMatching(pattern: string): Promise<void>;
 }

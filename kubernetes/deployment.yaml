@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portfolio-chat-server
+  namespace: portfolio
+  labels:
+    app: portfolio-chat-server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: portfolio-chat-server
+  template:
+    metadata:
+      labels:
+        app: portfolio-chat-server
+    spec:
+      containers:
+        - name: portfolio-chat-server-container
+          image: gcr.io/warrenburg-portfolio/portfolio-chat-server:latest
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              port: 9001
+              path: /health
+          livenessProbe:
+            periodSeconds: 15
+            httpGet:
+              port: 9001
+              path: /health
+          ports:
+            - containerPort: 9000
+            - containerPort: 9001

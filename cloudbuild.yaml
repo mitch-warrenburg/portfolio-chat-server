@@ -1,0 +1,53 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    id: Build Image
+    entrypoint: 'bash'
+    args: ['-c', 'docker build -t $_IMAGE:$COMMIT_SHA -t $_IMAGE:latest --build-arg REDIS_HOST=$$REDIS_HOST --build-arg ADMIN_USER_ID=$$ADMIN_USER_ID --build-arg ADMIN_SESSION_ID=$$ADMIN_SESSION_ID --build-arg ADMIN_USER_NAME="$$ADMIN_USER_NAME" --build-arg ADMIN_PASSWORD=$$ADMIN_PASSWORD .']
+    secretEnv: [ 'REDIS_HOST', 'ADMIN_USER_ID', 'ADMIN_SESSION_ID', 'ADMIN_USER_NAME', 'ADMIN_PASSWORD' ]
+  - name: gcr.io/cloud-builders/docker
+    id: Push Image
+    args: [ push, '$_IMAGE:$COMMIT_SHA' ]
+  - name: gcr.io/cloud-builders/gke-deploy
+    id: Prepare GKE deployment
+    args:
+      - prepare
+      - '--filename=$_K8S_PATH'
+      - '--image=$_IMAGE:$COMMIT_SHA'
+      - '--app=$_APP'
+      - '--version=$COMMIT_SHA'
+      - '--namespace=$_NAMESPACE'
+      - '--annotation=$_K8S_ANNOTATIONS,gcb-build-id=$BUILD_ID'
+      - '--create-application-cr'
+      - '--output=output'
+  - name: gcr.io/cloud-builders/gke-deploy
+    id: Apply GKE deployment
+    args:
+      - apply
+      - '--filename=output/expanded'
+      - '--cluster=$_CLUSTER'
+      - '--location=$_REGION'
+      - '--namespace=$_NAMESPACE'
+images:
+  - '$_IMAGE:$COMMIT_SHA'
+options:
+  substitutionOption: ALLOW_LOOSE
+substitutions:
+  _IMAGE: gcr.io/warrenburg-portfolio/portfolio-chat-server
+  _K8S_PATH: kubernetes/
+  _APP: portfolio-chat-server
+  _REGION: us-west2
+  _NAMESPACE: portfolio
+  _CLUSTER: portfolio-cluster
+  _OUTPUT_BUCKET_PATH: warrenburg-portfolio_cloudbuild/deploy
+availableSecrets:
+  secretManager:
+    - versionName: projects/warrenburg-portfolio/secrets/REDIS_HOST/versions/latest
+      env: REDIS_HOST
+    - versionName: projects/warrenburg-portfolio/secrets/ADMIN_USER_ID/versions/latest
+      env: ADMIN_USER_ID
+    - versionName: projects/warrenburg-portfolio/secrets/ADMIN_USER_NAME/versions/latest
+      env: ADMIN_USER_NAME
+    - versionName: projects/warrenburg-portfolio/secrets/ADMIN_SESSION_ID/versions/latest
+      env: ADMIN_SESSION_ID
+    - versionName: projects/warrenburg-portfolio/secrets/ADMIN_PASSWORD/versions/latest
+      env: ADMIN_PASSWORD

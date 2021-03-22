@@ -4,11 +4,11 @@ import { RedisAdminRepository } from '../admin';
 import RedisSessionRepository from '../session/RedisSessionRepository';
 import RedisMessageRepository from '../messaging/RedisMessageRepository';
 import {
-  Session,
-  ChatMessage,
-  AdminUser,
-  SessionSocket,
   User,
+  Session,
+  AdminUser,
+  ChatMessage,
+  SessionSocket,
 } from '../../types';
 
 export default class StorageService {

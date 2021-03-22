@@ -7,5 +7,24 @@ services:
       - 6379:6379
     volumes:
       - redis-data:/var/lib/redis/data/
+  node:
+    container_name: portfolio-chat-server
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: ${REDIS_HOST}
+      ADMIN_USER_ID: ${ADMIN_USER_ID}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_USER_NAME: ${ADMIN_USER_NAME}
+      ADMIN_SESSION_ID: ${ADMIN_SESSION_ID}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 9000:9000
+      - 9001:9001
+
 volumes:
   redis-data:
