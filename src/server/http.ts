@@ -55,8 +55,10 @@ export default async (
     response.status(200).json({ status: 'UP' });
   });
 
-  app.get('/api/v1/chat/defaultSendToUserId', (_, response) => {
-    response.status(200).json({ userId: env.adminUserId });
+  app.get('/api/v1/chat/defaultSendToUser', (_, response) => {
+    response
+      .status(200)
+      .json({ userId: env.adminUserId, username: env.adminUsername });
   });
 
   /* protected routes */
