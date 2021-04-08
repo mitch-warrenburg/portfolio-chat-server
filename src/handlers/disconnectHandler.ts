@@ -10,7 +10,7 @@ export const handleSessionDisconnect = (
   storageService: StorageService,
 ) => {
   socket.on(SOCKET_DISCONNECTED, async () => {
-    const matchingSockets = await io.in(socket.userId).allSockets();
+    const matchingSockets = await io.in(socket.uid).allSockets();
 
     if (!matchingSockets.size) {
       await storageService.saveSession(socket, false);

@@ -13,9 +13,9 @@ export default class MemoryMessageRepository implements MessageRepository {
     return message;
   }
 
-  async findMessagesForUser(userId: string): Promise<Array<ChatMessage>> {
+  async findMessagesForUser(uid: string): Promise<Array<ChatMessage>> {
     return this.messages.filter(
-      ({ from, to }) => from === userId || to === userId,
+      ({ from, to }) => from === uid || to === uid,
     );
   }
 }

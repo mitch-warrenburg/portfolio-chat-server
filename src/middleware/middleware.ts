@@ -1,25 +1,16 @@
-import env from '../env';
 import { v4 as uuid } from 'uuid';
 import AuthService from '../auth';
 import StorageService from '../store';
-import { SessionSocket } from '../types';
-import { TokenAuthError } from '../errors';
+import { SessionSocket, AuthenticatedUser, Session } from '../types';
 
-const _isAdminUser = (socket: SessionSocket) => {
-  return socket.handshake.auth.userId === env.adminUserId;
-};
-
-const _handleAdminConnection = async (
+const _handleFirstConnection = (
   socket: SessionSocket,
-  authService: AuthService,
+  user: AuthenticatedUser,
+  adminSession: Session,
 ) => {
-  if (await authService.authenticateWsJwt(socket)) {
-    socket.userId = env.adminUserId;
-    socket.username = env.adminUsername;
-    socket.sessionId = env.adminSessionId;
-  } else {
-    throw new Error('Invalid token.');
-  }
+  socket.uid = user.uid;
+  socket.username = user.username;
+  socket.sessionId = user.isAdmin ? adminSession.id : uuid();
 };
 
 const _handleExistingConnection = async (
@@ -32,7 +23,7 @@ const _handleExistingConnection = async (
     const session = await storageService.findSession(sessionId);
     if (session) {
       socket.sessionId = sessionId;
-      socket.userId = session.userId;
+      socket.uid = session.uid;
       socket.username = session.username;
       return true;
     }
@@ -40,36 +31,35 @@ const _handleExistingConnection = async (
   return false;
 };
 
-const _handleFirstConnection = (socket: SessionSocket, username: string) => {
-  socket.userId = uuid();
-  socket.sessionId = uuid();
-  socket.username = username;
-};
-
 export const createSessionMiddleware = (
+  adminSession: Session,
   authService: AuthService,
   storageService: StorageService,
 ) => async (socket: SessionSocket, next: (e?: any) => any) => {
-  const { username } = socket.handshake.auth;
+  const { uid, adminToken } = socket.handshake.auth;
 
-  if (!username) {
-    return next(new Error('Invalid Username'));
+  if (!uid) {
+    return next(new Error('invalid user'));
   }
 
-  if (_isAdminUser(socket)) {
-    try {
-      await _handleAdminConnection(socket, authService);
-      return next();
-    } catch (e) {
-      console.error(e);
-      return next(new TokenAuthError());
-    }
+  const firebaseUser = await authService.authenticateSession(
+    socket.request.headers.cookie, adminToken
+  );
+
+  if (!firebaseUser) {
+    return next(new Error('authentication failed'));
+  }
+
+  const user = await authService.getUser(uid);
+
+  if (!user) {
+    return next(new Error('invalid user'));
   }
 
   if (await _handleExistingConnection(socket, storageService)) {
     return next();
   }
 
-  _handleFirstConnection(socket, username);
+  _handleFirstConnection(socket, user, adminSession);
   next();
 };

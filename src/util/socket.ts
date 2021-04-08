@@ -7,12 +7,12 @@ import {
 } from '../constants';
 
 export const joinRoom = (socket: SessionSocket) => {
-  return socket.join(socket.userId);
+  return socket.join(socket.uid);
 };
 
 export const emitNewSessionDetails = (socket: SessionSocket) => {
-  const { userId, sessionId } = socket;
-  return socket.emit(NEW_SESSION, { userId, sessionId });
+  const { uid, sessionId } = socket;
+  return socket.emit(NEW_SESSION, { uid, sessionId });
 };
 
 export const emitUserSessionsWithMessages = (
@@ -21,11 +21,11 @@ export const emitUserSessionsWithMessages = (
 ) => socket.emit(USER_SESSIONS, sessions);
 
 export const broadcastUserSessionConnected = (socket: SessionSocket) => {
-  const { userId, username } = socket;
-  return socket.broadcast.emit(USER_CONNECTED, { userId, username });
+  const { uid, username } = socket;
+  return socket.broadcast.emit(USER_CONNECTED, { uid, username });
 };
 
 export const broadcastUserSessionDisconnected = (socket: SessionSocket) => {
-  const { userId } = socket;
-  return socket.broadcast.emit(USER_DISCONNECTED, { userId });
+  const { uid } = socket;
+  return socket.broadcast.emit(USER_DISCONNECTED, { uid });
 };
