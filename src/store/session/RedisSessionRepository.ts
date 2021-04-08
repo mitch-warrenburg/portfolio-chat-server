@@ -2,13 +2,13 @@ import { SessionRepository } from './types';
 import { SESSION_TTL } from '../../constants';
 import { Session, RedisExtended } from '../../types';
 
-const mapSession = ([id, userId, username, connected, eternal]):
+const mapSession = ([id, uid, username, connected, eternal]):
   | Session
   | undefined => {
-  return userId
+  return uid
     ? {
         id,
-        userId,
+        uid: uid,
         username,
         connected: connected === 'true',
         eternal: eternal === 'true',
@@ -28,7 +28,7 @@ export default class RedisSessionRepository implements SessionRepository {
       .hmget(
         `session:${id}`,
         'id',
-        'userId',
+        'uid',
         'username',
         'connected',
         'eternal',
@@ -37,7 +37,7 @@ export default class RedisSessionRepository implements SessionRepository {
   }
 
   async saveSession(session: Session): Promise<Session> {
-    const { id, userId, username, connected, eternal = false } = session;
+    const { id, uid, username, connected, eternal = false } = session;
 
     const command = await this.redisClient
       .multi()
@@ -45,8 +45,8 @@ export default class RedisSessionRepository implements SessionRepository {
         `session:${id}`,
         'id',
         id,
-        'userId',
-        userId,
+        'uid',
+        uid,
         'username',
         username,
         'connected',
@@ -81,7 +81,7 @@ export default class RedisSessionRepository implements SessionRepository {
 
     const commands = [];
     keys.forEach((key) => {
-      commands.push(['hmget', key, 'id', 'userId', 'username', 'connected', 'eternal']);
+      commands.push(['hmget', key, 'id', 'uid', 'username', 'connected', 'eternal']);
     });
 
     return await this.redisClient

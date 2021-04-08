@@ -9,22 +9,20 @@ export const loadEnv = (): Environment => {
     REDIS_HOST,
     CORS_ORIGINS,
     CORS_METHODS,
-    ADMIN_USER_ID,
-    ADMIN_PASSWORD,
-    ADMIN_USER_NAME,
-    ADMIN_SESSION_ID,
+    AUTH_SERVER_URL,
+    AUTH_SERVER_USER,
+    AUTH_SERVER_PASSWORD,
   } = process.env;
 
-  const env = {
+  const env: Environment = {
     wsPort: parseInt(WS_PORT || '9000'),
     httpPort: parseInt(HTTP_PORT || '9001'),
     corsOrigins: CORS_ORIGINS || '*',
     corsMethods: CORS_METHODS || '*',
     redisHost: REDIS_HOST,
-    adminUserId: ADMIN_USER_ID,
-    adminPassword: ADMIN_PASSWORD,
-    adminUsername: ADMIN_USER_NAME,
-    adminSessionId: ADMIN_SESSION_ID,
+    authServerUrl: AUTH_SERVER_URL,
+    authServerUser: AUTH_SERVER_USER,
+    authServerPassword: AUTH_SERVER_PASSWORD,
   };
 
   const missingVariablesMessage = Object.entries(env)

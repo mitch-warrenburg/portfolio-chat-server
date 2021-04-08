@@ -1,18 +1,18 @@
 import { groupBy } from 'lodash';
-import { RedisAdminRepository } from '../admin';
+import { AxiosResponse } from 'axios';
+import { client } from '../../server';
 import RedisSessionRepository from '../session/RedisSessionRepository';
 import RedisMessageRepository from '../messaging/RedisMessageRepository';
 import {
   User,
   Session,
-  AdminUser,
   ChatMessage,
   SessionSocket,
   RedisExtended,
+  DefaultUserResponse,
 } from '../../types';
 
 export default class StorageService {
-  private readonly _adminRepository: RedisAdminRepository;
   private readonly _messageRepository: RedisMessageRepository;
   private readonly _sessionRepository: RedisSessionRepository;
 
@@ -23,23 +23,24 @@ export default class StorageService {
     this._sessionRepository = new RedisSessionRepository(
       redisClient.duplicate(),
     );
-    this._adminRepository = new RedisAdminRepository(redisClient.duplicate());
   }
 
-  async saveAdminUser(
-    username: string,
-    password: string,
-    secret: string,
-  ): Promise<void> {
-    await this._adminRepository.saveUser(username, password, secret);
-  }
+  async createDefaultSession(): Promise<Session> {
+    const {
+      data: { sessionId: id, uid, username },
+    }: AxiosResponse<DefaultUserResponse> = await client.post(
+      `/api/v1/admin/chat/login`,
+    );
+    const defaultSession: Session = {
+      id,
+      uid,
+      username,
+      eternal: true,
+      connected: true,
+    };
+    await this.createSession(defaultSession);
 
-  async findAdminUser(username: string): Promise<AdminUser | undefined> {
-    return this._adminRepository.findUser(username);
-  }
-
-  async deleteAllAdminUsers(): Promise<void> {
-    await this._adminRepository.deleteKeysMatching('admin:*');
+    return defaultSession;
   }
 
   async deleteAllSessions(): Promise<Array<string> | undefined> {
@@ -69,8 +70,8 @@ export default class StorageService {
     return this._messageRepository.saveMessage(message);
   }
 
-  async findMessagesForUser(userId: string): Promise<Array<ChatMessage>> {
-    return this._messageRepository.findMessagesForUser(userId);
+  async findMessagesForUser(uid: string): Promise<Array<ChatMessage>> {
+    return this._messageRepository.findMessagesForUser(uid);
   }
 
   async saveSession(
@@ -82,7 +83,7 @@ export default class StorageService {
       eternal,
       connected,
       id: socket.sessionId,
-      userId: socket.userId,
+      uid: socket.uid,
       username: socket.username,
     });
   }
@@ -91,19 +92,19 @@ export default class StorageService {
     socket: SessionSocket,
   ): Promise<Array<User>> {
     const [messages, sessions] = await Promise.all([
-      this.findMessagesForUser(socket.userId),
+      this.findMessagesForUser(socket.uid),
       this._sessionRepository.findAllSessions(),
     ]);
 
     const messagesByUserSession = groupBy(messages, ({ from, to }) =>
-      socket.userId === from ? to : from,
+      socket.uid === from ? to : from,
     );
 
     return sessions.map((session: Session) => ({
-      userId: session.userId,
+      uid: session.uid,
       username: session.username,
       connected: session.connected,
-      messages: messagesByUserSession[session.userId] || [],
+      messages: messagesByUserSession[session.uid] || [],
     }));
   }
 }

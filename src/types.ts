@@ -8,9 +8,34 @@ export interface AdminUser {
 }
 
 export interface SessionSocket extends Socket {
-  userId: string;
+  uid: string;
   username: string;
   sessionId: string;
+}
+
+export type PrincipalRole =
+  | 'ROLE_USER'
+  | 'ROLE_ADMIN'
+  | 'ROLE_SYSTEM'
+  | 'ROLE_ANONYMOUS';
+
+export interface UserResponse {
+  uid: string;
+  username: string;
+  roles: Array<PrincipalRole>;
+}
+
+export interface DefaultUserResponse {
+  uid: string;
+  username: string;
+  sessionId: string;
+}
+
+export interface AuthenticatedUser {
+  uid: string;
+  isAdmin: boolean;
+  username: string;
+  roles: Array<PrincipalRole>;
 }
 
 export interface ChatMessage {
@@ -27,14 +52,14 @@ export interface TypingEvent {
 
 export interface Session {
   id: string;
-  userId: string;
+  uid: string;
   username: string;
   connected: boolean;
   eternal?: boolean;
 }
 
 export interface User {
-  userId: string;
+  uid: string;
   username: string;
   connected: boolean;
   messages: Array<ChatMessage>;
@@ -46,10 +71,9 @@ export interface Environment {
   redisHost: string;
   corsOrigins: string;
   corsMethods: string;
-  adminUserId: string;
-  adminUsername: string;
-  adminPassword: string;
-  adminSessionId: string;
+  authServerUrl: string;
+  authServerUser: string;
+  authServerPassword: string;
 }
 
 export interface RedisExtended extends Redis {
