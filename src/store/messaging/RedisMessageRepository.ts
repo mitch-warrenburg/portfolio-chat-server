@@ -21,9 +21,9 @@ export default class RedisMessageRepository implements MessageRepository {
     return message;
   }
 
-  async findMessagesForUser(userId: string): Promise<Array<ChatMessage>> {
+  async findMessagesForUser(uid: string): Promise<Array<ChatMessage>> {
     return await this.redisClient
-      .lrange(`messages:${userId}`, 0, -1)
+      .lrange(`messages:${uid}`, 0, -1)
       .then((results) => {
         return results.map((result) => JSON.parse(result));
       });

@@ -2,10 +2,10 @@ import env from '../env';
 import AuthService from '../auth';
 import { Server } from 'socket.io';
 import StorageService from '../store';
-import { SOCKET_CONNECTED } from '../constants';
 import { createAdapter } from 'socket.io-redis';
-import { SessionSocket, RedisExtended } from '../types';
+import { SOCKET_CONNECTED } from '../constants';
 import { createSessionMiddleware } from '../middleware';
+import { SessionSocket, RedisExtended, Session } from '../types';
 import {
   handleTypingEvents,
   handlePrivateMessage,
@@ -22,9 +22,11 @@ export default (
   redisClient: RedisExtended,
   storageService: StorageService,
   authService: AuthService,
+  adminSession: Session,
 ) => {
   const io = new Server(env.wsPort, {
     pingInterval: 5000,
+    pingTimeout: 10000,
     transports: ['websocket'],
     cors: { origin: env.corsOrigins, methods: env.corsMethods },
   });
@@ -36,7 +38,7 @@ export default (
     }),
   );
 
-  io.use(createSessionMiddleware(authService, storageService));
+  io.use(createSessionMiddleware(adminSession, authService, storageService));
 
   const onConnection = async (socket: SessionSocket) => {
     await storageService.saveSession(socket, true);

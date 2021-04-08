@@ -2,8 +2,8 @@ steps:
   - name: gcr.io/cloud-builders/docker
     id: Build Image
     entrypoint: 'bash'
-    args: ['-c', 'docker build -t $_IMAGE:$COMMIT_SHA -t $_IMAGE:latest --build-arg REDIS_HOST=$$REDIS_HOST --build-arg ADMIN_USER_ID=$$ADMIN_USER_ID --build-arg ADMIN_SESSION_ID=$$ADMIN_SESSION_ID --build-arg ADMIN_USER_NAME="$$ADMIN_USER_NAME" --build-arg ADMIN_PASSWORD=$$ADMIN_PASSWORD .']
-    secretEnv: [ 'REDIS_HOST', 'ADMIN_USER_ID', 'ADMIN_SESSION_ID', 'ADMIN_USER_NAME', 'ADMIN_PASSWORD' ]
+    args: [ '-c', 'docker build -t $_IMAGE:$COMMIT_SHA -t $_IMAGE:latest --build-arg REDIS_HOST="$$REDIS_HOST" --build-arg AUTH_SERVER_URL="$$AUTH_SERVER_URL" --build-arg AUTH_SERVER_URL="$$AUTH_SERVER_USER" --build-arg AUTH_SERVER_URL="$$AUTH_SERVER_PASSWORD" .' ]
+    secretEnv: [ 'REDIS_HOST', 'AUTH_SERVER_URL', 'AUTH_SERVER_USER', 'AUTH_SERVER_PASSWORD' ]
   - name: gcr.io/cloud-builders/docker
     id: Push Image
     args: [ push, '$_IMAGE:$COMMIT_SHA' ]
@@ -43,11 +43,9 @@ availableSecrets:
   secretManager:
     - versionName: projects/warrenburg-portfolio/secrets/REDIS_HOST/versions/latest
       env: REDIS_HOST
-    - versionName: projects/warrenburg-portfolio/secrets/ADMIN_USER_ID/versions/latest
-      env: ADMIN_USER_ID
-    - versionName: projects/warrenburg-portfolio/secrets/ADMIN_USER_NAME/versions/latest
-      env: ADMIN_USER_NAME
-    - versionName: projects/warrenburg-portfolio/secrets/ADMIN_SESSION_ID/versions/latest
-      env: ADMIN_SESSION_ID
-    - versionName: projects/warrenburg-portfolio/secrets/ADMIN_PASSWORD/versions/latest
-      env: ADMIN_PASSWORD
+    - versionName: projects/warrenburg-portfolio/secrets/AUTH_SERVER_URL/versions/latest
+      env: AUTH_SERVER_URL
+    - versionName: projects/warrenburg-portfolio/secrets/AUTH_SERVER_USER/versions/latest
+      env: AUTH_SERVER_USER
+    - versionName: projects/warrenburg-portfolio/secrets/AUTH_SERVER_PASSWORD/versions/latest
+      env: AUTH_SERVER_PASSWORD

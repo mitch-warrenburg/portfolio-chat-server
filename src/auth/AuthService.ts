@@ -1,87 +1,73 @@
-import bcrypt from 'bcrypt';
-import env from '../env';
-import jwt from 'jsonwebtoken';
-import { v4 as uuid } from 'uuid';
-import StorageService from '../store';
-import { SessionSocket } from '../types';
+import cookie from 'cookie';
+import { client } from '../server';
+import { Response } from 'express';
+import firebase from 'firebase-admin';
+import { AxiosResponse } from 'axios';
+import { SESSION_COOKIE_NAME } from '../constants';
+import { UserResponse, AuthenticatedUser } from '../types';
 
 export default class AuthService {
-  private readonly _storageService: StorageService;
-  private readonly _defaultAdminSession = {
-    userId: env.adminUserId,
-    username: env.adminUsername,
-    sessionId: env.adminSessionId,
-  } as SessionSocket;
+  private readonly _auth = firebase.auth();
 
-  constructor(storageService: StorageService) {
-    this._storageService = storageService;
-  }
-
-  async authenticateAdmin(
-    username?: string,
-    password?: string,
-  ): Promise<boolean> {
-    if (!username || !password) {
-      return false;
-    }
-    const user = await this._storageService.findAdminUser(username);
-    return user ? await bcrypt.compare(password, user.password) : false;
-  }
-
-  async authenticateWsJwt(socket: SessionSocket): Promise<boolean> {
-    const { token } = socket.handshake.auth;
-
-    const admin = await this._getAdminUser();
-
-    if (!admin) {
-      throw new Error('No admin user found for the configured credentials.');
-    }
-
-    return jwt.verify(token, admin.secret) === env.adminUsername;
-  }
-
-  async authenticateHttpJwt(authHeader: string): Promise<boolean> {
+  async getUser(uid: string): Promise<AuthenticatedUser | null> {
     try {
-      const token = authHeader.replace('Bearer', ' ').trim();
-      console.log(authHeader);
-      console.log(token);
-
-      const admin = await this._getAdminUser();
-      return env.adminUsername === jwt.verify(token, admin.secret);
+      const { data: user }: AxiosResponse<UserResponse> = await client.get(
+        `/api/v1/admin/users/${uid}`,
+      );
+      return {
+        ...user,
+        isAdmin: user.roles.some((role) => role === 'ROLE_ADMIN'),
+      };
     } catch (e) {
       console.error(e.message);
-      return false;
+      return null;
     }
   }
 
-  async refreshAdminUser() {
-    await this._storageService.deleteAllAdminUsers();
-    await this._storageService.saveAdminUser(
-      env.adminUsername,
-      env.adminPassword,
-      uuid(),
-    );
-  }
+  async authenticateSession(
+    cookieString: string,
+    adminToken?: string,
+  ): Promise<firebase.auth.UserRecord | null> {
+    try {
+      const cookies = cookie.parse(cookieString || '') || {};
+      const sessionCookie = cookies[SESSION_COOKIE_NAME];
+      const token = adminToken
+        ? await this._auth.verifyIdToken(adminToken)
+        : await this._auth.verifySessionCookie(sessionCookie);
 
-  async refreshAdminDefaultSession() {
-    const session = await this._storageService.findSession(env.adminSessionId);
-
-    if (!session) {
-      await this._storageService.saveSession(
-        this._defaultAdminSession,
-        false,
-        true,
-      );
+      return await this._auth.getUser(token.uid);
+    } catch (e) {
+      console.error(e);
+      return null;
     }
   }
 
-  private async _getAdminUser() {
-    const admin = await this._storageService.findAdminUser(env.adminUsername);
+  async authenticateHttpRequest(
+    cookieString: string,
+    response: Response,
+    requiresAdmin: boolean,
+  ) {
+    const userRecord = await this.authenticateSession(cookieString);
 
-    if (!admin) {
-      throw new Error('No admin user found for the configured credentials.');
+    if (!userRecord) {
+      response.sendStatus(401);
+      return null;
+    }
+    const user = await this.getUser(userRecord.uid);
+
+    if (!user) {
+      response.sendStatus(401);
+      return null;
     }
 
-    return admin;
+    if (!requiresAdmin) {
+      return user;
+    }
+
+    if (user.roles.some((role) => role === 'ROLE_ADMIN')) {
+      return user;
+    }
+
+    return null;
   }
 }

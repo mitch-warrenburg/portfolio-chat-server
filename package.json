@@ -1,14 +1,17 @@
 {
   "name": "portfolio-chat-server",
-  "version": "0.0.1",
-  "description": "A websocket-based chat server for the https://mitch.engineering portfolio site.",
-  "author": "Mitch Warrenburg <mitchwarrenburg@protonmail.com>",
-  "license": "Apache-2.0",
+  "version": "v1.0.0",
+  "license": "MIT",
+  "url": "https://mitch.engineering",
+  "homepage": "https://mitch.engineering",
+  "repository": "https://github.com/mitch-warrenburg/portfolio-chat-server.git",
+  "description": "A websocket-based chat server for the https://mitch.engineering portfolio application.",
   "engines": {
     "node": "14"
   },
   "main": "build/main.js",
   "devDependencies": {
+    "@types/axios": "^0.14.0",
     "@types/bcrypt": "^3.0.0",
     "@types/express": "^4.17.11",
     "@types/express-session": "^1.17.3",
@@ -40,6 +43,7 @@
     "cookie-parser": "^1.4.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "firebase-admin": "^9.6.0",
     "ioredis": "^4.24.2",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
