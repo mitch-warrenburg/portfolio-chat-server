@@ -45,10 +45,10 @@ availableSecrets:
       env: REDIS_HOST
     - versionName: projects/warrenburg-portfolio/secrets/AUTH_SERVER_URL/versions/latest
       env: AUTH_SERVER_URL
-    - versionName: projects/warrenburg-portfolio/secrets/AUTH_SERVER_USER/versions/latest
+    - versionName: projects/warrenburg-portfolio/secrets/SECURITY_SYSTEM_USERNAME/versions/latest
       env: AUTH_SERVER_USER
-    - versionName: projects/warrenburg-portfolio/secrets/AUTH_SERVER_PASSWORD/versions/latest
+    - versionName: projects/warrenburg-portfolio/secrets/SECURITY_SYSTEM_PASSWORD/versions/latest
       env: AUTH_SERVER_PASSWORD
-    - versionName: projects/warrenburg-portfolio/secrets/ENCODED_GOOGLE_APPLICATION_CREDENTIALS/versions/latest
+    - versionName: projects/warrenburg-portfolio/secrets/GCP_CREDS/versions/latest
       env: ENCODED_GOOGLE_APPLICATION_CREDENTIALS
 
