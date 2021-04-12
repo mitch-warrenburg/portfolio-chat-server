@@ -4,7 +4,9 @@ services:
     container_name: chat-server-redis
     image: redis
     networks:
-      - default
+      portfolio-server_portfolio:
+        aliases:
+          - redis
     ports:
       - 6379:6379
     volumes:
@@ -12,17 +14,20 @@ services:
   node:
     container_name: portfolio-chat-server
     networks:
-      - default
-    env_file:
-      - .env
+      portfolio-server_portfolio:
+        aliases:
+          - portfolio-chat-server-service
     depends_on:
       - redis
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - 9000:9000
-      - 9001:9001
+
+networks:
+  portfolio-server_portfolio:
+    external: true
 
 volumes:
   redis-data:

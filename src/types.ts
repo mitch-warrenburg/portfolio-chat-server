@@ -9,6 +9,7 @@ export interface AdminUser {
 
 export interface SessionSocket extends Socket {
   uid: string;
+  isAdmin: boolean;
   username: string;
   sessionId: string;
 }

@@ -1,3 +1,4 @@
+import { chain } from 'lodash';
 import { groupBy } from 'lodash';
 import { AxiosResponse } from 'axios';
 import { client } from '../../server';
@@ -39,7 +40,7 @@ export default class StorageService {
       connected: true,
     };
     await this.createSession(defaultSession);
-
+    console.log('Created default admin session:\n', defaultSession);
     return defaultSession;
   }
 
@@ -90,6 +91,7 @@ export default class StorageService {
 
   async getUserSessionsWithMessages(
     socket: SessionSocket,
+    adminSession: Session,
   ): Promise<Array<User>> {
     const [messages, sessions] = await Promise.all([
       this.findMessagesForUser(socket.uid),
@@ -100,11 +102,19 @@ export default class StorageService {
       socket.uid === from ? to : from,
     );
 
-    return sessions.map((session: Session) => ({
-      uid: session.uid,
-      username: session.username,
-      connected: session.connected,
-      messages: messagesByUserSession[session.uid] || [],
-    }));
+    return chain(sessions)
+      .filter(
+        (session) =>
+          socket.isAdmin ||
+          [adminSession.uid, socket.uid].includes(session.uid),
+      )
+      .uniqBy('uid')
+      .map((session: Session) => ({
+        uid: session.uid,
+        username: session.username,
+        connected: session.connected,
+        messages: messagesByUserSession[session.uid] || [],
+      }))
+      .value();
   }
 }

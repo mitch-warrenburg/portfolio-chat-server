@@ -18,8 +18,13 @@ const redisClient = new Redis({
 const authService = new AuthService();
 const storageService = new StorageService(redisClient);
 
-storageService.createDefaultSession().then((session) => {
-  console.log('Starting application with admin session:\n', session);
-  const io = wsServer(redisClient, storageService, authService, session);
-  httpServer(io, authService, storageService);
-});
+storageService
+  .createDefaultSession()
+  .then((session) => {
+    const io = wsServer(redisClient, storageService, authService, session);
+    httpServer(io, authService, storageService);
+  })
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });

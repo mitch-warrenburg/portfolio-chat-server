@@ -46,7 +46,7 @@ export default (
     emitNewSessionDetails(socket);
     joinRoom(socket);
 
-    const sessions = await storageService.getUserSessionsWithMessages(socket);
+    const sessions = await storageService.getUserSessionsWithMessages(socket, adminSession);
 
     emitUserSessionsWithMessages(socket, sessions);
     broadcastUserSessionConnected(socket);

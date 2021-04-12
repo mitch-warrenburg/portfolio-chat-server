@@ -15,6 +15,6 @@ export const handlePrivateMessage = (
 
 export const handleTypingEvents = (socket: SessionSocket) => {
   socket.on(TYPING_STATUS, async (event: TypingEvent) => {
-    socket.in(event.to).emit(TYPING_STATUS, event);
+    await socket.in(event.to).emit(TYPING_STATUS, event);
   });
 };

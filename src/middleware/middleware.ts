@@ -9,12 +9,14 @@ const _handleFirstConnection = (
   adminSession: Session,
 ) => {
   socket.uid = user.uid;
+  socket.isAdmin = user.isAdmin;
   socket.username = user.username;
   socket.sessionId = user.isAdmin ? adminSession.id : uuid();
 };
 
 const _handleExistingConnection = async (
   socket: SessionSocket,
+  user: AuthenticatedUser,
   storageService: StorageService,
 ) => {
   const { sessionId } = socket.handshake.auth;
@@ -23,8 +25,10 @@ const _handleExistingConnection = async (
     const session = await storageService.findSession(sessionId);
     if (session) {
       socket.sessionId = sessionId;
-      socket.uid = session.uid;
-      socket.username = session.username;
+      socket.uid = user.uid;
+      socket.isAdmin = user.isAdmin;
+      socket.username = user.username;
+      await storageService.saveSession(socket, true);
       return true;
     }
   }
@@ -43,7 +47,8 @@ export const createSessionMiddleware = (
   }
 
   const firebaseUser = await authService.authenticateSession(
-    socket.request.headers.cookie, adminToken
+    socket.request.headers.cookie,
+    adminToken,
   );
 
   if (!firebaseUser) {
@@ -56,7 +61,7 @@ export const createSessionMiddleware = (
     return next(new Error('invalid user'));
   }
 
-  if (await _handleExistingConnection(socket, storageService)) {
+  if (await _handleExistingConnection(socket, user, storageService)) {
     return next();
   }
 
