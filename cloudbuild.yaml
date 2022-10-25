@@ -2,8 +2,8 @@ steps:
   - name: gcr.io/cloud-builders/docker
     id: Build Image
     entrypoint: 'bash'
-    args: [ '-c', 'docker build -t $_IMAGE:$COMMIT_SHA -t $_IMAGE:latest --build-arg REDIS_HOST="$$REDIS_HOST" --build-arg AUTH_SERVER_URL="$$AUTH_SERVER_URL" --build-arg AUTH_SERVER_USER="$$AUTH_SERVER_USER" --build-arg AUTH_SERVER_PASSWORD="$$AUTH_SERVER_PASSWORD" --build-arg ENCODED_GOOGLE_APPLICATION_CREDENTIALS="$$ENCODED_GOOGLE_APPLICATION_CREDENTIALS" .' ]
-    secretEnv: [ 'REDIS_HOST', 'AUTH_SERVER_URL', 'AUTH_SERVER_USER', 'AUTH_SERVER_PASSWORD', 'ENCODED_GOOGLE_APPLICATION_CREDENTIALS' ]
+    args: [ '-c', 'docker build -t $_IMAGE:$COMMIT_SHA -t $_IMAGE:latest --build-arg REDIS_HOST="$$REDIS_HOST" --build-arg REDIS_USER="$$REDIS_USER" --build-arg REDIS_PASSWORD="$$REDIS_PASSWORD" --build-arg AUTH_SERVER_URL="$$AUTH_SERVER_URL" --build-arg AUTH_SERVER_USER="$$AUTH_SERVER_USER" --build-arg AUTH_SERVER_PASSWORD="$$AUTH_SERVER_PASSWORD" --build-arg ENCODED_GOOGLE_APPLICATION_CREDENTIALS="$$ENCODED_GOOGLE_APPLICATION_CREDENTIALS" .' ]
+    secretEnv: [ 'REDIS_HOST', 'REDIS_USER', 'REDIS_PASSWORD', 'AUTH_SERVER_URL', 'AUTH_SERVER_USER', 'AUTH_SERVER_PASSWORD', 'ENCODED_GOOGLE_APPLICATION_CREDENTIALS' ]
   - name: gcr.io/cloud-builders/docker
     id: Push Image
     args: [ push, '$_IMAGE:$COMMIT_SHA' ]
@@ -43,6 +43,10 @@ availableSecrets:
   secretManager:
     - versionName: projects/warrenburg-portfolio/secrets/REDIS_HOST/versions/latest
       env: REDIS_HOST
+    - versionName: projects/warrenburg-portfolio/secrets/REDIS_USER/versions/latest
+      env: REDIS_USER
+    - versionName: projects/warrenburg-portfolio/secrets/REDIS_PASSWORD/versions/latest
+      env: REDIS_PASSWORD
     - versionName: projects/warrenburg-portfolio/secrets/AUTH_SERVER_URL/versions/latest
       env: AUTH_SERVER_URL
     - versionName: projects/warrenburg-portfolio/secrets/SECURITY_SYSTEM_USERNAME/versions/latest
@@ -51,4 +55,3 @@ availableSecrets:
       env: AUTH_SERVER_PASSWORD
     - versionName: projects/warrenburg-portfolio/secrets/GCP_CREDS/versions/latest
       env: ENCODED_GOOGLE_APPLICATION_CREDENTIALS
-

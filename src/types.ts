@@ -1,5 +1,5 @@
-import { Socket } from 'socket.io';
-import { Redis, RedisOptions } from 'ioredis';
+import {Socket} from 'socket.io';
+import {Redis, RedisOptions} from 'ioredis';
 
 export interface AdminUser {
   password: string;
@@ -70,6 +70,8 @@ export interface Environment {
   wsPort: number;
   httpPort: number;
   redisHost: string;
+  redisUser: string;
+  redisPassword: string;
   corsOrigins: string;
   corsMethods: string;
   authServerUrl: string;
@@ -78,11 +80,11 @@ export interface Environment {
 }
 
 export interface RedisExtended extends Redis {
-  new (options?: RedisOptions): RedisExtended;
+  new(options?: RedisOptions): RedisExtended;
 
-  new (port?: number, host?: string, options?: RedisOptions): RedisExtended;
+  new(port?: number, host?: string, options?: RedisOptions): RedisExtended;
 
-  new (host?: string, options?: RedisOptions): RedisExtended;
+  new(host?: string, options?: RedisOptions): RedisExtended;
 
   duplicate(): RedisExtended;
 

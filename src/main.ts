@@ -2,8 +2,8 @@ import env from './env';
 import AuthService from './auth';
 import StorageService from './store';
 import firebase from 'firebase-admin';
-import { Redis, loadGcpKey } from './util';
-import { wsServer, httpServer } from './server';
+import {Redis, loadGcpKey} from './util';
+import {wsServer, httpServer} from './server';
 
 loadGcpKey();
 
@@ -12,8 +12,10 @@ firebase.initializeApp({
 });
 
 const redisClient = new Redis({
-  port: 6379,
+  port: 14370,
   host: env.redisHost,
+  username: env.redisUser,
+  password: env.redisPassword,
 });
 const authService = new AuthService();
 const storageService = new StorageService(redisClient);

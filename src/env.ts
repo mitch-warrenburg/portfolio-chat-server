@@ -1,12 +1,14 @@
 import dotenv from 'dotenv';
-import { Environment } from './types';
+import {Environment} from './types';
 
 export const loadEnv = (): Environment => {
   dotenv.config();
   const {
     WS_PORT,
     HTTP_PORT,
+    REDIS_USER,
     REDIS_HOST,
+    REDIS_PASSWORD,
     CORS_ORIGINS,
     CORS_METHODS,
     AUTH_SERVER_URL,
@@ -20,9 +22,11 @@ export const loadEnv = (): Environment => {
     corsOrigins: CORS_ORIGINS || '*',
     corsMethods: CORS_METHODS || '*',
     redisHost: REDIS_HOST,
+    redisUser: REDIS_USER,
+    redisPassword: REDIS_PASSWORD,
     authServerUrl: AUTH_SERVER_URL,
     authServerUser: AUTH_SERVER_USER,
-    authServerPassword: AUTH_SERVER_PASSWORD,
+    authServerPassword: AUTH_SERVER_PASSWORD
   };
 
   const missingVariablesMessage = Object.entries(env)

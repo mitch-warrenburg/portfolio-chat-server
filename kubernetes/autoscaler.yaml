@@ -1,4 +1,4 @@
-apiVersion: autoscaling/v2beta1
+apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
   name: portfolio-chat-server-autoscaler
@@ -7,13 +7,9 @@ metadata:
     app: portfolio-chat-server
 spec:
   scaleTargetRef:
+    apiVersion: apps/v1
     kind: Deployment
     name: portfolio-chat-server
-    apiVersion: apps/v1
   minReplicas: 1
   maxReplicas: 1
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        targetAverageUtilization: 80
+  targetCPUUtilizationPercentage: 80
